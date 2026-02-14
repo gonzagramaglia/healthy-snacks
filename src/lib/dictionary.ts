@@ -17,7 +17,7 @@ export const dictionary = {
         // MixBuilder
         ingredients: {
             banana: "Banana chips",
-            anana: "Ananá deshidratado confitado",
+            anana: "Ananá deshidratado y confitado",
             almendras: "Almendras",
             nueces: "Nueces",
             uva: "Uva deshidratada",
@@ -131,7 +131,7 @@ export const dictionary = {
         pricing_tier_3_desc: "Energía para probar",
         pricing_buy_btn: "Comprar",
         pricing_includes: "FRUTOS SELECCIONADOS:",
-        pricing_ingredients_list: "Pasas de uva, Almendras, Nueces, Banana chips, Ananá deshidratado confitado",
+        pricing_ingredients_list: "Pasas de uva, Almendras, Nueces, Banana chips, Ananá deshidratado y confitado",
 
         // FAQ
         faq_title_full: "Preguntas Frecuentes",
