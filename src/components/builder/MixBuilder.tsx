@@ -162,10 +162,10 @@ export function MixBuilder({ lang = 'es' }: { lang?: Language }) {
     };
   }, []);
 
-  // Pricing (ARS): base 4600 per mix; promos -> 5 for 22000, 10 for 44000
-  const PRICE_SINGLE = 4600;
+  // Pricing (ARS): base 4700 per mix; promos -> 5 for 22000, 10 for 43000
+  const PRICE_SINGLE = 4700;
   const PRICE_PACK5 = 22000;  // per 5
-  const PRICE_PACK10 = 44000; // per 10
+  const PRICE_PACK10 = 43000; // per 10
   const DELIVERY_COST = 1000;
 
   const currency = useMemo(() => new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS", maximumFractionDigits: 0 }), []);
