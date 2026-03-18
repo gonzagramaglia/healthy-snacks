@@ -14,6 +14,17 @@ export const dictionary = {
         location_2: "Sagrada Familia 672",
         connector_and: "y",
 
+        // Coupon
+        coupon_title: "Canjeá tu mix gratis",
+        coupon_subtitle: "Por cada 10 mixes individuales que compres,\n¡el próximo te lo regalamos nosotros!",
+        coupon_status_regular: "Llevás {count} de 10 Mixes",
+        coupon_status_full: "¡Felicidades! Ganaste un Mix gratis",
+        coupon_last_updated: "Última actualización: {date}",
+        coupon_search_title: "¿Sos cliente habitual?",
+        coupon_search_subtitle: "Ingresá tu nombre para ver tus beneficios",
+        coupon_search_placeholder: "Tu nombre...",
+        coupon_search_button: "Ver mi cupón",
+
         // MixBuilder
         ingredients: {
             banana: "Banana chips",
@@ -162,6 +173,17 @@ export const dictionary = {
         location: "Ciudad Universitaria",
         location_2: "Sagrada Familia 672",
         connector_and: "and",
+
+        // Coupon
+        coupon_title: "Get your free mix",
+        coupon_subtitle: "For every 10 individual mixes you buy,\nthe next one is on us!",
+        coupon_status_regular: "You have {count} of 10 Mixes",
+        coupon_status_full: "Congratulations! You earned a free Mix",
+        coupon_last_updated: "Last updated: {date}",
+        coupon_search_title: "Are you a regular customer?",
+        coupon_search_subtitle: "Enter your name to see your benefits",
+        coupon_search_placeholder: "Your name...",
+        coupon_search_button: "See my coupon",
 
         // MixBuilder
         ingredients: {

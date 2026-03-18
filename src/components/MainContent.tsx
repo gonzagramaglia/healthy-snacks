@@ -9,10 +9,13 @@ import { Pricing } from "@/components/Pricing";
 import { FAQ } from "@/components/FAQ";
 import { Trust } from "@/components/Trust";
 import { dictionary, Language } from "@/lib/dictionary";
+import { CustomerCoupon } from "@/components/CustomerCoupon";
+import { CustomerSearch } from "@/components/CustomerSearch";
+import { CustomerPurchase } from "@/lib/customers";
 
 const sourceSans = Source_Sans_3({ subsets: ["latin"], weight: ["400", "600", "700"] });
 
-export function MainContent({ lang }: { lang: Language }) {
+export function MainContent({ lang, customerData }: { lang: Language, customerData?: CustomerPurchase }) {
     const t = dictionary[lang];
 
     return (
@@ -69,7 +72,7 @@ export function MainContent({ lang }: { lang: Language }) {
                 </div>
             </header>
             <main className="flex-1">
-                <section className="mx-auto max-w-5xl px-6 py-8 md:py-16 grid md:grid-cols-2 gap-10 items-center">
+                <section className="mx-auto max-w-5xl px-6 pt-4 pb-4 md:pt-8 md:pb-6 grid md:grid-cols-2 gap-10 items-center">
                     <div className="space-y-4 text-center md:text-left">
                         <h1 className="text-4xl md:text-5xl font-bold leading-tight whitespace-pre-line">{t.hero_title}</h1>
                         <div className="space-y-2">
@@ -101,6 +104,11 @@ export function MainContent({ lang }: { lang: Language }) {
                         </a>
                     </div>
                 </section>
+                {customerData ? (
+                    <CustomerCoupon data={customerData} lang={lang} />
+                ) : (
+                    <CustomerSearch lang={lang} />
+                )}
                 <div id="mix-builder" className="scroll-mt-24">
                     <MixBuilder lang={lang} />
                 </div>
