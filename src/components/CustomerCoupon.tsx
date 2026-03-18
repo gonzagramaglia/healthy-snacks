@@ -18,9 +18,19 @@ export function CustomerCoupon({ data, lang }: { data: CustomerPurchase, lang: L
 
                 <div className="relative z-10 flex flex-col md:flex-row gap-8 items-center justify-between">
                     <div className="space-y-4 text-center md:text-left flex-1">
-                        <h2 className="text-3xl font-bold tracking-tight">
-                            {lang === 'es' ? '¡Hola,' : 'Hi,'} <span className="text-primary">{data.customerName}</span>! 👋
-                        </h2>
+                        <div className="flex items-center gap-2 justify-center md:justify-start">
+                            <h2 className="text-3xl font-bold tracking-tight">
+                                {lang === 'es' ? '¡Hola,' : 'Hi,'} <span className="text-primary">{data.customerName}</span>! 👋
+                            </h2>
+                            {data.isVerified && (
+                                <div
+                                    className="flex items-center justify-center w-5 h-5 bg-blue-500 rounded-full text-white cursor-help transform transition-transform hover:scale-110"
+                                    title={lang === 'es' ? "Cliente verificado" : "Verified customer"}
+                                >
+                                    <Check className="w-3 h-3 stroke-[4px]" />
+                                </div>
+                            )}
+                        </div>
                         <div className="space-y-1">
                             <h3 className="text-xl font-semibold opacity-90">{t.coupon_title}</h3>
                             <p className="text-muted-foreground text-sm max-w-md mx-auto md:mx-0 whitespace-pre-line">
@@ -29,8 +39,13 @@ export function CustomerCoupon({ data, lang }: { data: CustomerPurchase, lang: L
                         </div>
                         <div className="pt-2">
                             <p className="text-[10px] md:text-xs text-muted-foreground/60 uppercase tracking-wider font-medium">
-                                {t.coupon_last_updated.replace('{date}', new Date(data.lastUpdated).toLocaleDateString(lang === 'es' ? 'es-AR' : 'en-US', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }))}
+                                {t.coupon_last_updated.replace('{date}', new Date(data.lastUpdated).toLocaleString(lang === 'es' ? 'es-AR' : 'en-US', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit', hour12: true }))}
                             </p>
+                            <div className="mt-2">
+                                <a href="/" className="text-[10px] md:text-xs text-muted-foreground/40 hover:text-primary transition-colors hover:underline">
+                                    {t.coupon_not_user.replace('{name}', data.customerName)} <strong>{t.coupon_not_user_action}</strong>
+                                </a>
+                            </div>
                         </div>
                     </div>
 
