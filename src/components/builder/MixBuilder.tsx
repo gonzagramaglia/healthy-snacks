@@ -12,9 +12,9 @@ const MAX_PER_INGREDIENT = 66;
 // const MIN_NONZERO = 22;
 
 const INGREDIENTS_BASE = [
-  { id: "banana", color: "#a8d8ea" },    // celeste claro argentino
-  { id: "almendras", color: "#4fb3d4" }, // celeste argentino
   { id: "nueces", color: "#2a9cc0" },    // celeste medio oscuro
+  { id: "almendras", color: "#4fb3d4" }, // celeste argentino
+  { id: "banana", color: "#a8d8ea" },    // celeste claro argentino
   { id: "uva", color: "#1a7fa0" },       // celeste oscuro
   { id: "anana", color: "#75c9e0" },   // celeste medio claro
 ] as const;
@@ -886,19 +886,52 @@ export function MixBuilder({ lang = 'es' }: { lang?: Language }) {
                   return (
                     <div key={index} className="space-y-2 pb-3 border-b last:border-b-0 last:pb-0">
                       <div className="flex items-center justify-between gap-3">
-                        <div className="font-medium text-yellow-600 max-w-80 md:max-w-96">{t.mix_composed_of} {INGREDIENTS.filter((ing) => (item.mix[ing.id] ?? 0) > 0)
-                          .map((ing) => {
-                            const percent = itemTotal > 0 ? Math.round(((item.mix[ing.id] ?? 0) / itemTotal) * 100) : 0;
-                            const isDifferent = differentIngredients.has(ing.id);
-                            const text = `${percent}% ${t.mix_percent_of} ${ing.name}`;
+                        <div className="font-medium text-muted-foreground max-w-80 md:max-w-96 select-none leading-relaxed">
+                          {(() => {
+                            const parts = t.mix_composed_of.split(" ");
+                            const lastPart = parts.pop();
+                            const mainText = parts.join(" ");
                             return (
-                              <span key={ing.id}>
-                                {isDifferent ? <strong className="text-yellow-400">{text}</strong> : text}
-                              </span>
+                              <>
+                                <span className="text-orange-500 dark:text-orange-400 font-bold">{mainText} </span>
+                                <span className="text-yellow-600 dark:text-yellow-500 font-bold">{lastPart}</span>
+                              </>
                             );
-                          })
-                          .map((node, i) => (i === 0 ? node : [' + ', node]))
-                          .flat() as React.ReactNode[]}</div>
+                          })()} {INGREDIENTS.filter((ing) => (item.mix[ing.id] ?? 0) > 0)
+                            .map((ing, i) => {
+                              const percent = itemTotal > 0 ? Math.round(((item.mix[ing.id] ?? 0) / itemTotal) * 100) : 0;
+                              const text = `${percent}% ${t.mix_percent_of} ${ing.name}`;
+                              const isYellow = i % 2 === 0;
+                              return (
+                                <span
+                                  key={ing.id}
+                                  className={cn(
+                                    "transition-colors duration-300",
+                                    isYellow ? "text-yellow-600 dark:text-yellow-500 font-bold" : "text-orange-500 dark:text-orange-400 font-bold"
+                                  )}
+                                >
+                                  {text}
+                                </span>
+                              );
+                            })
+                            .reduce((prev: React.ReactNode[], curr, i) => {
+                              if (i === 0) return [curr];
+                              const nextIsYellow = (i) % 2 === 0;
+                              return [
+                                ...prev,
+                                <span
+                                  key={`plus-${i}`}
+                                  className={cn(
+                                    "mx-1.5 font-bold",
+                                    nextIsYellow ? "text-yellow-600 dark:text-yellow-500" : "text-orange-500 dark:text-orange-400"
+                                  )}
+                                >
+                                  +
+                                </span>,
+                                curr
+                              ];
+                            }, [])}
+                        </div>
                         <div className="flex items-center gap-2">
                           <Button
                             variant="outline"
@@ -979,7 +1012,7 @@ export function MixBuilder({ lang = 'es' }: { lang?: Language }) {
               </button>
               <span className="whitespace-nowrap text-sky-600">
                 {deliveryOption === "ciudad" ? t.delivery_compact_pickup :
-                    t.delivery_compact_shipping.replace('${price}', DELIVERY_COST.toString())}
+                  t.delivery_compact_shipping.replace('${price}', DELIVERY_COST.toString())}
               </span>
               <button
                 onClick={() => {
@@ -999,7 +1032,7 @@ export function MixBuilder({ lang = 'es' }: { lang?: Language }) {
             <div>
               <label htmlFor="delivery-address" className="text-sm text-muted-foreground block mb-1">
                 {deliveryOption === "ciudad" ? t.delivery_label_pickup :
-                    t.delivery_label_shipping} <span className="text-red-500">*</span>
+                  t.delivery_label_shipping} <span className="text-red-500">*</span>
               </label>
               <Input
                 id="delivery-address"
