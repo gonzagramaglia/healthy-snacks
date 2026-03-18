@@ -7,26 +7,12 @@ export interface CustomerPurchase {
 }
 
 export const hardcodedCustomers: Record<string, CustomerPurchase> = {
-    "lucas": {
-        id: "1",
-        customerName: "Lucas",
-        purchasesCount: 7,
-        lastUpdated: "2024-03-18T10:30:00Z",
-        isVerified: false
-    },
     "gonza": {
         id: "2",
         customerName: "Gonza",
         purchasesCount: 10,
         lastUpdated: "2024-03-17T15:45:00Z",
         isVerified: true
-    },
-    "ana": {
-        id: "3",
-        customerName: "Ana",
-        purchasesCount: 3,
-        lastUpdated: "2024-03-16T12:00:00Z",
-        isVerified: false
     },
     "cochito": {
         id: "4",

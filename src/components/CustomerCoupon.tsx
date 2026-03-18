@@ -3,6 +3,7 @@
 import { CustomerPurchase } from "@/lib/customers";
 import { dictionary, Language } from "@/lib/dictionary";
 import { Check } from "lucide-react";
+import Link from "next/link";
 
 export function CustomerCoupon({ data, lang }: { data: CustomerPurchase, lang: Language }) {
     const t = dictionary[lang];
@@ -42,9 +43,9 @@ export function CustomerCoupon({ data, lang }: { data: CustomerPurchase, lang: L
                                 {t.coupon_last_updated.replace('{date}', new Date(data.lastUpdated).toLocaleString(lang === 'es' ? 'es-AR' : 'en-US', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit', hour12: true }))}
                             </p>
                             <div className="mt-2">
-                                <a href="/" className="text-[10px] md:text-xs text-muted-foreground/40 hover:text-primary transition-colors hover:underline">
-                                    {t.coupon_not_user.replace('{name}', data.customerName)} <strong>{t.coupon_not_user_action}</strong>
-                                </a>
+                                <Link href="/" className="text-[10px] md:text-xs text-muted-foreground/30 hover:text-muted-foreground/60 transition-colors hover:underline">
+                                    {t.coupon_not_user.replace('{name}', data.customerName)} {t.coupon_not_user_action}
+                                </Link>
                             </div>
                         </div>
                     </div>

@@ -11,6 +11,7 @@ import { dictionary, Language } from "@/lib/dictionary";
 import { CustomerCoupon } from "@/components/CustomerCoupon";
 import { CustomerSearch } from "@/components/CustomerSearch";
 import { CustomerPurchase } from "@/lib/customers";
+import Link from "next/link";
 
 const sourceSans = Source_Sans_3({ subsets: ["latin"], weight: ["400", "600", "700"] });
 
@@ -21,7 +22,7 @@ export function MainContent({ lang, customerData }: { lang: Language, customerDa
         <div className="min-h-screen flex flex-col">
             <header className="w-full border-b">
                 <div className="mx-auto max-w-5xl px-6 py-4 flex items-center justify-between">
-                    <a
+                    <Link
                         href="/"
                         className="flex items-center gap-2 hover:cursor-pointer shrink-0"
                         aria-label="Ir a sección de confianza"
@@ -44,7 +45,7 @@ export function MainContent({ lang, customerData }: { lang: Language, customerDa
                             />
                         </div>
                         <span className={`${sourceSans.className} text-lg font-semibold leading-none`}>Moovimiento</span>
-                    </a>
+                    </Link>
                     <nav className="flex items-center gap-5 justify-end">
                         <a
                             href="#faq"

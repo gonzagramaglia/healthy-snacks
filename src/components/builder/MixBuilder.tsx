@@ -110,7 +110,6 @@ export function MixBuilder({ lang = 'es' }: { lang?: Language }) {
     type: 'percentage' | 'fixed';
     value: number;
   } | null>(null);
-  const [discountError, setDiscountError] = useState<string>("");
   const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
   // removed selectedPaymentMethod state — the web should not show the extra 'Total a pagar' row
@@ -135,7 +134,6 @@ export function MixBuilder({ lang = 'es' }: { lang?: Language }) {
   const total = useMemo(() => Object.values(mix).reduce((a, b) => a + (Number.isFinite(b) ? b : 0), 0), [mix]);
   const remaining = TOTAL_GRAMS - total;
   const isValid = total === TOTAL_GRAMS && INGREDIENTS_BASE.every((ing) => {
-    const isComingSoon = (ing as { comingSoon?: boolean }).comingSoon;
     const g = mix[ing.id] ?? 0;
     return g >= 0 && g <= MAX_PER_INGREDIENT;
   });
@@ -271,25 +269,6 @@ export function MixBuilder({ lang = 'es' }: { lang?: Language }) {
     return null;
   };
 
-  const handleApplyDiscount = () => {
-    if (!discountCode.trim()) {
-      setDiscountError(t.discount_invalid);
-      return;
-    }
-
-    const discount = validateDiscountCode(discountCode);
-    if (discount) {
-      setAppliedDiscount({
-        code: discountCode.toUpperCase(),
-        type: discount.type,
-        value: discount.value,
-      });
-      setDiscountError("");
-    } else {
-      setDiscountError(t.discount_invalid);
-    }
-  };
-
   // handleRemoveDiscount removed (not used)
 
   // Guardar en localStorage cuando cambien los valores
@@ -360,26 +339,6 @@ export function MixBuilder({ lang = 'es' }: { lang?: Language }) {
     };
   }, [totalMixQty, deliveryOption, appliedDiscount]);
 
-  // Etiqueta legible para el descuento aplicado (porcentaje o monto), preferimos el mapa explícito si existe
-  const appliedDiscountLabel = useMemo(() => {
-    if (!appliedDiscount) return '';
-    const mapEnv = process.env.NEXT_PUBLIC_DISCOUNT_MAP || '';
-    if (mapEnv) {
-      try {
-        const parsed = JSON.parse(mapEnv) as Record<string, { type: 'percentage' | 'fixed'; value: number }>;
-        const mapped = parsed[appliedDiscount.code.toUpperCase()];
-        if (mapped) {
-          if (mapped.type === 'percentage') return `${mapped.value}% de descuento`;
-          if (mapped.type === 'fixed') return `$${mapped.value.toLocaleString('es-AR')} de descuento`;
-        }
-      } catch {
-        // ignore
-      }
-    }
-    // fallback al valor tal cual
-    return appliedDiscount.type === 'percentage' ? `${appliedDiscount.value}% de descuento` : `$${appliedDiscount.value} de descuento`;
-  }, [appliedDiscount]);
-
   function setGram(id: IngredientId, grams: number) {
     // Set grams for a single ingredient, ensuring the overall total never exceeds TOTAL_GRAMS
     setMix((prev) => {
@@ -393,8 +352,6 @@ export function MixBuilder({ lang = 'es' }: { lang?: Language }) {
       const maxAllowedEven = Math.floor(maxAllowed / 2) * 2;
       const perIngredientEven = Math.floor(MAX_PER_INGREDIENT / 2) * 2;
 
-      const ing = INGREDIENTS_BASE.find(i => i.id === id);
-      const isComingSoon = (ing as { comingSoon?: boolean })?.comingSoon;
       const minAllowed = 0;
 
       let nextVal = Math.min(desiredEven, maxAllowedEven, perIngredientEven);
@@ -415,8 +372,6 @@ export function MixBuilder({ lang = 'es' }: { lang?: Language }) {
       const maxAllowedEven = Math.floor(maxAllowed / 2) * 2;
       const perIngredientEven = Math.floor(MAX_PER_INGREDIENT / 2) * 2;
 
-      const ing = INGREDIENTS_BASE.find(i => i.id === id);
-      const isComingSoon = (ing as { comingSoon?: boolean })?.comingSoon;
       const minAllowed = 0;
 
       let nextVal = Math.max(minAllowed, Math.min(desiredEven, maxAllowedEven, perIngredientEven));
@@ -859,30 +814,6 @@ export function MixBuilder({ lang = 'es' }: { lang?: Language }) {
                 {cartItems.map((item, index) => {
                   const itemTotal = Object.values(item.mix).reduce((a, b) => a + (Number.isFinite(b) ? b : 0), 0);
 
-                  // Función para determinar si un ingrediente difiere de otros Mixes
-                  const getIngredientDifferences = () => {
-                    const differences = new Set<string>();
-
-                    // Comparar con todos los otros Mixes
-                    cartItems.forEach((otherItem, otherIndex) => {
-                      if (otherIndex !== index) {
-                        const otherTotal = Object.values(otherItem.mix).reduce((a, b) => a + (Number.isFinite(b) ? b : 0), 0);
-
-                        INGREDIENTS.forEach((ing) => {
-                          const currentPercent = itemTotal > 0 ? Math.round(((item.mix[ing.id] ?? 0) / itemTotal) * 100) : 0;
-                          const otherPercent = otherTotal > 0 ? Math.round(((otherItem.mix[ing.id] ?? 0) / otherTotal) * 100) : 0;
-
-                          if (currentPercent !== otherPercent) {
-                            differences.add(ing.id);
-                          }
-                        });
-                      }
-                    });
-
-                    return differences;
-                  };
-
-                  const differentIngredients = getIngredientDifferences();
 
                   return (
                     <div key={index} className="space-y-2 pb-3 border-b last:border-b-0 last:pb-0">
@@ -1220,7 +1151,6 @@ export function MixBuilder({ lang = 'es' }: { lang?: Language }) {
                     // Limpiar descuento aplicado
                     setAppliedDiscount(null);
                     setDiscountCode("");
-                    setDiscountError("");
                     // Setear mix clásico
                     setMix({
                       anana: 44,
@@ -1414,7 +1344,6 @@ export function MixBuilder({ lang = 'es' }: { lang?: Language }) {
                   // Limpiar descuento aplicado
                   setAppliedDiscount(null);
                   setDiscountCode("");
-                  setDiscountError("");
                   setMix({
                     anana: 44,
                     almendras: 44,
