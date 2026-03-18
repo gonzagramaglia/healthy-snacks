@@ -26,7 +26,7 @@ export function FAQ({ lang }: FAQProps) {
     ];
 
     return (
-        <section id="faq" className="w-full py-16 md:py-24">
+        <section id="faq" className="w-full pt-16 pb-4 md:pt-20 md:pb-6 bg-muted/30 border-t border-muted/20">
             <div className="mx-auto max-w-3xl px-6">
                 <div className="text-center mb-12">
                     <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-2">{t.faq_title_full}</h2>

@@ -7,7 +7,6 @@ import { LanguageToggle } from "@/components/language-toggle";
 import { MixBuilder } from "@/components/builder/MixBuilder";
 import { Pricing } from "@/components/Pricing";
 import { FAQ } from "@/components/FAQ";
-import { Trust } from "@/components/Trust";
 import { dictionary, Language } from "@/lib/dictionary";
 import { CustomerCoupon } from "@/components/CustomerCoupon";
 import { CustomerSearch } from "@/components/CustomerSearch";
@@ -23,11 +22,7 @@ export function MainContent({ lang, customerData }: { lang: Language, customerDa
             <header className="w-full border-b">
                 <div className="mx-auto max-w-5xl px-6 py-4 flex items-center justify-between">
                     <a
-                        href="#trust"
-                        onClick={(e) => {
-                            e.preventDefault();
-                            document.getElementById('trust')?.scrollIntoView({ behavior: 'smooth' });
-                        }}
+                        href="/"
                         className="flex items-center gap-2 hover:cursor-pointer shrink-0"
                         aria-label="Ir a sección de confianza"
                     >
@@ -113,7 +108,6 @@ export function MainContent({ lang, customerData }: { lang: Language, customerDa
                     <MixBuilder lang={lang} />
                 </div>
                 <FAQ lang={lang} />
-                <Trust lang={lang} />
                 <Pricing lang={lang} />
             </main>
             <footer className="border-t">

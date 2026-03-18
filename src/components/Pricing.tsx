@@ -40,7 +40,7 @@ export function Pricing({ lang }: PricingProps) {
     };
 
     return (
-        <section id="pricing" className="w-full py-16 md:py-24 bg-muted/30">
+        <section id="pricing" className="w-full pt-12 pb-16 md:pt-16 md:pb-24 bg-muted/30">
             <div className="mx-auto max-w-5xl px-6">
                 <div className="text-center mb-12">
                     <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">{t.pricing_title}</h2>

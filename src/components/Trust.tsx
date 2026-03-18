@@ -11,7 +11,7 @@ export function Trust({ lang }: TrustProps) {
     const t = dictionary[lang];
 
     return (
-        <section id="trust" className="w-full py-16 bg-primary/5 border-y">
+        <section id="trust" className="w-full py-10 bg-primary/5 border-t border-muted/20">
             <div className="mx-auto max-w-4xl px-6 text-center">
                 <div className="mb-8 flex justify-center">
                     {/* Using the same logo as header but larger or just text? User prompt says "Logo" then "Hacer pedido" then "Elegido por..." 
@@ -38,7 +38,7 @@ export function Trust({ lang }: TrustProps) {
                 <h2 className="text-2xl md:text-3xl font-bold mb-4">
                     {t.trust_slogan}
                 </h2>
-                <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
+                <p className="text-lg text-muted-foreground mb-0 max-w-2xl mx-auto">
                     {t.trust_sub}
                 </p>
 

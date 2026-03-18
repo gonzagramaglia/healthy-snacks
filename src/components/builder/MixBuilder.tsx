@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -502,7 +503,7 @@ export function MixBuilder({ lang = 'es' }: { lang?: Language }) {
   }, [isClassicMix, isValid, shakeClassicMix]);
 
   return (
-    <div className="mx-auto max-w-5xl px-6 space-y-6 pb-8">
+    <div className="mx-auto max-w-5xl px-6 space-y-6 pb-24">
       <div className="flex flex-col items-center md:flex-row md:items-center md:justify-between gap-1 text-center md:text-left">
         <h2 className="hidden md:block text-2xl font-semibold">{t.builder_title}</h2>
         <div className="text-sm text-muted-foreground whitespace-normal flex flex-col items-center sm:flex-row sm:justify-between gap-0 sm:gap-8 pt-2 leading-tight">
@@ -1357,6 +1358,31 @@ export function MixBuilder({ lang = 'es' }: { lang?: Language }) {
             >
               {t.pay_mercadopago}
             </Button>
+          </div>
+
+          <div className="pt-8 border-t mt-4 text-center space-y-6">
+            <div className="flex justify-center -mb-2">
+              <div className="relative h-16 w-16 md:h-20 md:w-20">
+                {/* Properly adjusted Diffused Glow behind the trust logo */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 md:w-48 md:h-48 bg-white/50 dark:bg-white/10 rounded-full blur-[45px] md:blur-[60px]" />
+                <Image
+                  src="/moovimiento.png"
+                  alt="Moovimiento"
+                  fill
+                  className="relative object-contain block dark:hidden"
+                />
+                <Image
+                  src="/moovimiento-white.png"
+                  alt="Moovimiento"
+                  fill
+                  className="relative object-contain hidden dark:block"
+                />
+              </div>
+            </div>
+            <div className="space-y-3 pt-2 pb-2">
+              <h3 className="text-xl font-bold whitespace-pre-line leading-[1.3]">{t.trust_slogan}</h3>
+              <p className="text-muted-foreground max-w-lg mx-auto leading-relaxed whitespace-pre-line">{t.trust_sub}</p>
+            </div>
           </div>
 
           {/* Mensaje de error */}
