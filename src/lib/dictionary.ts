@@ -25,7 +25,7 @@ export const dictionary = {
         coupon_search_placeholder: "Tu nombre...",
         coupon_search_button: "Ver mi cupón",
         coupon_not_user: "¿No sos {name}?",
-        coupon_not_user_action: "Volvé a ingresar tu usuario",
+        coupon_not_user_action: "Volvé a la pantalla de ingreso",
 
         // MixBuilder
         ingredients: {
@@ -187,7 +187,7 @@ export const dictionary = {
         coupon_search_placeholder: "Your name...",
         coupon_search_button: "See my coupon",
         coupon_not_user: "Not {name}?",
-        coupon_not_user_action: "Re-enter your user",
+        coupon_not_user_action: "Return to the login screen",
 
         // MixBuilder
         ingredients: {

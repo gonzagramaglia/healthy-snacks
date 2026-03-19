@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { CustomerPurchase } from "@/lib/customers";
 import { dictionary, Language } from "@/lib/dictionary";
 import { Check } from "lucide-react";
@@ -7,9 +8,18 @@ import Link from "next/link";
 
 export function CustomerCoupon({ data, lang }: { data: CustomerPurchase, lang: Language }) {
     const t = dictionary[lang];
+    const [activeSlot, setActiveSlot] = useState<number | null>(null);
     const totalSlots = 10;
     const progress = Math.min(data.purchasesCount, totalSlots);
     const isFull = progress >= totalSlots;
+    const today = new Date().toLocaleDateString('es-AR', { day: 'numeric', month: 'numeric' });
+
+    const handleSlotClick = (i: number) => {
+        if (i <= progress) {
+            setActiveSlot(i);
+            setTimeout(() => setActiveSlot(null), 1500);
+        }
+    };
 
     return (
         <section className="mx-auto max-w-5xl px-6 pb-5 pt-1 md:pb-9 md:pt-2">
@@ -40,7 +50,7 @@ export function CustomerCoupon({ data, lang }: { data: CustomerPurchase, lang: L
                         </div>
                         <div className="pt-2">
                             <p className="text-[10px] md:text-xs text-muted-foreground/60 uppercase tracking-wider font-medium">
-                                {t.coupon_last_updated.replace('{date}', new Date(data.lastUpdated).toLocaleString(lang === 'es' ? 'es-AR' : 'en-US', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit', hour12: true }))}
+                                {t.coupon_last_updated.replace('{date}', new Date(data.lastUpdated).toLocaleDateString(lang === 'es' ? 'es-AR' : 'en-US', { day: 'numeric', month: 'long' }))}
                             </p>
                             <div className="mt-2">
                                 <Link href="/" className="text-[10px] md:text-xs text-muted-foreground/30 hover:text-muted-foreground/60 transition-colors hover:underline">
@@ -55,8 +65,9 @@ export function CustomerCoupon({ data, lang }: { data: CustomerPurchase, lang: L
                             {Array.from({ length: totalSlots }).map((_, i) => (
                                 <div
                                     key={i}
+                                    onClick={() => handleSlotClick(i)}
                                     className={`
-                                        aspect-square rounded-xl md:rounded-2xl border-2 flex items-center justify-center relative transition-all duration-300
+                                        aspect-square rounded-xl md:rounded-2xl border-2 flex items-center justify-center relative transition-all duration-300 group/slot cursor-pointer
                                         ${i < progress
                                             ? 'bg-primary border-primary text-primary-foreground shadow-lg shadow-primary/20'
                                             : 'border-dashed border-muted-foreground/30 bg-muted/50'}
@@ -64,9 +75,29 @@ export function CustomerCoupon({ data, lang }: { data: CustomerPurchase, lang: L
                                     `}
                                 >
                                     {i < progress ? (
-                                        <Check className="w-5 h-5 md:w-6 md:h-6 stroke-[3px]" />
+                                        <div className="flex items-center justify-center">
+                                            <Check className={`w-5 h-5 md:w-6 md:h-6 stroke-[3px] group-hover/slot:hidden ${activeSlot === i ? 'hidden' : 'block'}`} />
+                                            <span className={`hidden group-hover/slot:block ${activeSlot === i ? '!block' : ''} text-[10px] md:text-sm font-bold tracking-tight animate-in fade-in zoom-in duration-200`}>
+                                                {data.purchaseDates?.[i] || "Ok"}
+                                            </span>
+                                        </div>
                                     ) : (
-                                        <span className="text-muted-foreground/30 font-bold text-sm md:text-base">{i + 1}</span>
+                                        <div className="flex items-center justify-center">
+                                            {i === progress && !isFull ? (
+                                                <>
+                                                    <span className={`font-bold text-sm md:text-base transition-all duration-300 text-primary animate-pulse scale-110 group-hover/slot:opacity-0 ${activeSlot === i ? 'opacity-0' : 'opacity-100'}`}>
+                                                        {i + 1}
+                                                    </span>
+                                                    <span className={`absolute inset-0 flex items-center justify-center transition-all duration-300 opacity-0 group-hover/slot:opacity-100 ${activeSlot === i ? '!opacity-100' : ''} text-[10px] md:text-sm font-bold tracking-tight`}>
+                                                        {today}
+                                                    </span>
+                                                </>
+                                            ) : (
+                                                <span className="text-muted-foreground/30 font-bold text-sm md:text-base">
+                                                    {i + 1}
+                                                </span>
+                                            )}
+                                        </div>
                                     )}
 
                                     {i === 9 && (
