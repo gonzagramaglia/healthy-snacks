@@ -142,58 +142,83 @@ export async function POST(request: NextRequest) {
         }).join(', ');
       }
 
-      // Para Mixes personalizados, mostrar precio original sin promos
       const qty = Number(item.quantity ?? 0);
       const unit = Number(item.unit_price ?? 0);
-      let displayPrice = unit * qty;
-      if (productName && productName.includes('Mix personalizado')) {
-        displayPrice = 4000 * qty; // Precio original sin promos
-      }
+      const displayPrice = unit * qty;
+      const isSavingRow = displayPrice < 0;
 
       return `
-        <tr>
-          <td style="padding: 8px; border-bottom: 1px solid #eee;">
+        <tr ${isSavingRow ? 'style="background-color: #f0fdf4;"' : ''}>
+          <td style="padding: 8px; border-bottom: 1px solid #eee; ${isSavingRow ? 'color: #16a34a;' : ''}">
             <strong>${productName}</strong>
             ${composition ? `<br><span style="font-size: 13px; color: #666; line-height: 1.6;">${composition}</span>` : ''}
           </td>
-          <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: center;">${qty}</td>
-          <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">${currency.format(displayPrice)}</td>
+          <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: center; ${isSavingRow ? 'color: #16a34a;' : ''}">${qty}</td>
+          <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right; white-space:nowrap; ${isSavingRow ? 'color: #16a34a;' : ''}">${currency.format(displayPrice)}</td>
         </tr>
       `;
     }).join('');
 
-    // Calcular ahorros para mostrar en la tabla
-    const precioUnitario = 4000;
-    const precioSinPromo = totalMixQty * precioUnitario;
-    const costoEnvio = (deliveryOption === "ciudad" || deliveryOption === "sagrada") ? 0 : 1000;
-
-    // Calcular precio con promos aplicadas (packs de 15, packs de 5, y unidades sueltas)
-    const n15 = Math.floor(totalMixQty / 15);
-    const remAfter15 = totalMixQty - n15 * 15;
-    const n5 = Math.floor(remAfter15 / 5);
-    const n1 = remAfter15 - n5 * 5;
-
-    const precioConPromo = n15 * 53000 + n5 * 18000 + n1 * precioUnitario;
-    const descuentoPromo = precioSinPromo - precioConPromo;
-
     // Generar filas de ahorros
     let ahorrosHTML = '';
+    const hasDeliveryLine = items.some((it) => {
+      const title = (it.title ?? '').toLowerCase();
+      return title.includes('envío') || title.includes('envio');
+    });
 
-    // Ahorro por envío gratuito
-    if (costoEnvio > 0) {
-      ahorrosHTML += `
-        <tr style="background-color: #f0fdf4;">
-          <td style="padding: 8px; border-bottom: 1px solid #eee; color: #16a34a;">
-            <strong>🚚 Ahorro por envío gratuito</strong>
-          </td>
-          <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: center; color: #16a34a;">1</td>
-          <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right; color: #16a34a; white-space:nowrap;">- ${currency.format(costoEnvio)}</td>
-        </tr>
-      `;
-    }
+    const hasDiscountLine = items.some((it) => {
+      const amount = Number(it.unit_price ?? 0) * Number(it.quantity ?? 0);
+      if (amount >= 0) return false;
+
+      if (discountCode && (it.title ?? '').toUpperCase().includes(discountCode.toUpperCase())) {
+        return true;
+      }
+
+      if (discountAmount && discountAmount > 0) {
+        return Math.round(Math.abs(amount)) === Math.round(discountAmount);
+      }
+
+      return false;
+    });
+
+    // Promos vigentes: 1 mix = 4700, pack de 5 = 22000, pack de 10 = 43000
+    const PRICE_SINGLE = 4700;
+    const PRICE_PACK5 = 22000;
+    const PRICE_PACK10 = 43000;
+
+    let rem = Number(totalMixQty ?? 0);
+    const n10 = Math.floor(rem / 10);
+    rem -= n10 * 10;
+    const n5 = Math.floor(rem / 5);
+    rem -= n5 * 5;
+    const n1 = rem;
+
+    const precioSinPromo = Number(totalMixQty ?? 0) * PRICE_SINGLE;
+    const precioConPromo = n10 * PRICE_PACK10 + n5 * PRICE_PACK5 + n1 * PRICE_SINGLE;
+    const descuentoPromo = precioSinPromo - precioConPromo;
+
+    const hasPromoLine = items.some((it) => {
+      const amount = Number(it.unit_price ?? 0) * Number(it.quantity ?? 0);
+      if (amount >= 0) return false;
+      return /promo/i.test(it.title ?? '');
+    });
+
+    const totalMixesEnItems = items.reduce((sum, it) => {
+      const title = (it.title ?? '').toLowerCase();
+      if (!title.includes('mix personalizado')) return sum;
+
+      const amount = Number(it.unit_price ?? 0) * Number(it.quantity ?? 0);
+      if (amount <= 0) return sum;
+      return sum + amount;
+    }, 0);
+
+    // Si los mixes ya vienen con precio promocional prorrateado, no agregar fila extra de ahorro.
+    const promoYaEmbebida =
+      descuentoPromo > 0 &&
+      Math.abs(totalMixesEnItems - precioConPromo) <= 2;
 
     // Ahorro por descuento por código
-    if (discountCode && discountAmount && discountAmount > 0) {
+    if (discountCode && discountAmount && discountAmount > 0 && !hasDiscountLine) {
       // Aplicar tope por seguridad (en caso de que venga mayor desde el cliente)
       const DISCOUNT_CAP = 787;
       const displayDiscountAmount = Math.min(discountAmount, DISCOUNT_CAP);
@@ -244,10 +269,9 @@ export async function POST(request: NextRequest) {
       `;
     }
 
-    // Ahorro por promos (desglose por packs de 15 y de 5)
-    if (descuentoPromo > 0) {
+    if (descuentoPromo > 0 && !hasPromoLine && !promoYaEmbebida) {
       const promoParts: string[] = [];
-      if (n15 > 0) promoParts.push(`${n15} de 15 Mixes`);
+      if (n10 > 0) promoParts.push(`${n10} de 10 Mixes`);
       if (n5 > 0) promoParts.push(`${n5} de 5 Mixes`);
       const promoLabel = promoParts.length > 0 ? ` (${promoParts.join(' + ')})` : '';
 
@@ -261,6 +285,16 @@ export async function POST(request: NextRequest) {
         </tr>
       `;
     }
+
+    const deliveryRowHTML = deliveryOption === "envio" && !hasDeliveryLine ? `
+                <tr>
+                  <td style="padding: 8px; border-bottom: 1px solid #eee;">
+                    <strong>Envío a Córdoba</strong>
+                  </td>
+                  <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: center;">1</td>
+                  <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right; white-space:nowrap;">${currency.format(1000)}</td>
+                </tr>
+                ` : '';
 
     const deliveryText = deliveryOption === "ciudad"
       ? "Ciudad Universitaria (Envío gratuito)"
@@ -377,15 +411,7 @@ export async function POST(request: NextRequest) {
               </thead>
               <tbody>
                 ${itemsHTML}
-                ${deliveryOption === "envio" ? `
-                <tr>
-                  <td style="padding: 8px; border-bottom: 1px solid #eee;">
-                    <strong>Envío a Córdoba</strong>
-                  </td>
-                  <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: center;">1</td>
-                  <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right; white-space:nowrap;">${currency.format(1000)}</td>
-                </tr>
-                ` : ''}
+                ${deliveryRowHTML}
                 ${ahorrosHTML}
               </tbody>
             </table>
