@@ -140,7 +140,7 @@ export function MainContent({
           </div>
         </section>
         {benefitsMode === "teaser" ? <BenefitsTeaser lang={lang} /> : null}
-        {benefitsMode === 'hub' ? (
+        {benefitsMode === "hub" ? (
           <Suspense fallback={null}>
             <CustomerSearch lang={lang} />
           </Suspense>

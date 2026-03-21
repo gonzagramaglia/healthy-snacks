@@ -26,13 +26,15 @@ export function CustomerSearch({ lang }: { lang: Language }) {
 
   useEffect(() => {
     return () => {
-      if (surpriseInfoTimerRef.current) clearTimeout(surpriseInfoTimerRef.current);
+      if (surpriseInfoTimerRef.current)
+        clearTimeout(surpriseInfoTimerRef.current);
     };
   }, []);
 
   const handleSurpriseInfoClick = () => {
     setShowSurpriseInfo(true);
-    if (surpriseInfoTimerRef.current) clearTimeout(surpriseInfoTimerRef.current);
+    if (surpriseInfoTimerRef.current)
+      clearTimeout(surpriseInfoTimerRef.current);
     surpriseInfoTimerRef.current = setTimeout(() => {
       setShowSurpriseInfo(false);
     }, 3000);
@@ -85,10 +87,19 @@ export function CustomerSearch({ lang }: { lang: Language }) {
             {lang === "es" ? (
               <>
                 Ingresá tu usuario para ver tu progreso
-                <span className="block md:inline"> hacia los próximos regalos</span>
+                <span className="block md:inline">
+                  {" "}
+                  hacia los próximos regalos
+                </span>
               </>
             ) : (
-              "Enter your username to view accumulated individual Mix purchases, active coupons, and your progress to the next gift."
+              <>
+                Enter your username to see your progress
+                <span className="block md:inline">
+                  {" "}
+                  toward upcoming rewards
+                </span>
+              </>
             )}
           </p>
 
@@ -96,9 +107,17 @@ export function CustomerSearch({ lang }: { lang: Language }) {
             {lang === "es" ? (
               <div>
                 <p className="text-center md:text-left">
-                  <strong>🎟️ Cada compra de 1, 2, 3 o 4 Mixes suma pasos</strong>{" "}
-                  <span className="md:hidden">¡Al llegar a la meta, vas a poder canjear tu cupón por 1 Mix gratuito!</span>
-                  <span className="hidden md:inline">¡Al llegar a la meta, vas a poder canjear tu cupón por 1 Mix gratuito y otro regalo sorpresa!</span>
+                  <strong>
+                    🎟️ Cada compra de 1, 2, 3 o 4 Mixes suma pasos
+                  </strong>{" "}
+                  <span className="md:hidden">
+                    ¡Al llegar a la meta, vas a poder canjear tu cupón por 1 Mix
+                    gratuito!
+                  </span>
+                  <span className="hidden md:inline">
+                    ¡Al llegar a la meta, vas a poder canjear tu cupón por 1 Mix
+                    gratuito y otro regalo sorpresa!
+                  </span>
                   <span className="relative hidden md:inline-flex align-middle ml-1 group/info select-none cursor-default">
                     <span
                       onClick={handleSurpriseInfoClick}
@@ -106,8 +125,11 @@ export function CustomerSearch({ lang }: { lang: Language }) {
                     >
                       ?
                     </span>
-                    <span className={`pointer-events-none absolute left-1/2 top-[calc(100%+6px)] -translate-x-1/2 z-20 w-64 rounded-md border border-primary/20 bg-background px-2 py-1.5 text-[11px] font-medium text-primary text-center shadow-md transition-opacity duration-150 select-none cursor-default ${showSurpriseInfo ? "opacity-100" : "opacity-0 group-hover/info:opacity-100"}`}>
-                      Puede incluir descuentos en próximas compras o en locales adheridos
+                    <span
+                      className={`pointer-events-none absolute left-1/2 top-[calc(100%+6px)] -translate-x-1/2 z-20 w-64 rounded-md border border-primary/20 bg-background px-2 py-1.5 text-[11px] font-medium text-primary text-center shadow-md transition-opacity duration-150 select-none cursor-default ${showSurpriseInfo ? "opacity-100" : "opacity-0 group-hover/info:opacity-100"}`}
+                    >
+                      Puede incluir descuentos en próximas compras o en locales
+                      adheridos
                     </span>
                   </span>
                 </p>
@@ -131,8 +153,32 @@ export function CustomerSearch({ lang }: { lang: Language }) {
               </div>
             ) : (
               <div>
-                <p>
-                  🎟️ Each purchase of 1 to 4 individual Mixes adds 1 step. When you reach the goal, your coupon/gift is unlocked automatically.
+                <p className="text-center md:text-left">
+                  <strong>
+                    🎟️ Every purchase of 1, 2, 3, or 4 Mixes adds steps
+                  </strong>{" "}
+                  <span className="md:hidden">
+                    Once you hit the goal, you can redeem your coupon for 1 free
+                    Mix!
+                  </span>
+                  <span className="hidden md:inline">
+                    Once you hit the goal, you can redeem your coupon for 1 free
+                    Mix and an extra surprise gift!
+                  </span>
+                  <span className="relative hidden md:inline-flex align-middle ml-1 group/info select-none cursor-default">
+                    <span
+                      onClick={handleSurpriseInfoClick}
+                      className="inline-flex items-center justify-center w-4 h-4 rounded-full border border-primary/40 text-[10px] font-bold text-primary select-none cursor-default"
+                    >
+                      ?
+                    </span>
+                    <span
+                      className={`pointer-events-none absolute left-1/2 top-[calc(100%+6px)] -translate-x-1/2 z-20 w-64 rounded-md border border-primary/20 bg-background px-2 py-1.5 text-[11px] font-medium text-primary text-center shadow-md transition-opacity duration-150 select-none cursor-default ${showSurpriseInfo ? "opacity-100" : "opacity-0 group-hover/info:opacity-100"}`}
+                    >
+                      It may include discounts for future purchases or partner
+                      stores
+                    </span>
+                  </span>
                 </p>
                 <p className="text-[11px] text-muted-foreground font-bold mt-2 mb-2 text-center md:text-left">
                   Progress example (7/10):

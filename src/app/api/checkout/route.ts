@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { MercadoPagoConfig, Preference } from "mercadopago";
 import { saveOrder, OrderItem } from "@/lib/orders";
+import { validateCoupon } from "@/lib/coupons";
 
 // Configurar Mercado Pago
 const client = new MercadoPagoConfig({
@@ -24,7 +25,6 @@ interface CheckoutBody {
   name?: string;
   phone?: string;
   discountCode?: string | null;
-  discountAmount?: number;
 }
 
 interface PreferenceData {
@@ -60,11 +60,19 @@ interface PreferenceData {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json() as CheckoutBody;
-    const { items, deliveryOption, deliveryAddress, email, name, phone, discountCode, discountAmount } = body;
+    const body = (await request.json()) as CheckoutBody;
+    const {
+      items,
+      deliveryOption,
+      deliveryAddress,
+      email,
+      name,
+      phone,
+      discountCode,
+    } = body;
 
     console.log("Creating preference with items:", items);
-    console.log("Discount info:", { discountCode, discountAmount });
+    console.log("Discount info:", { discountCode });
 
     // Crear preferencia de pago
     const preference = new Preference(client);
@@ -81,26 +89,43 @@ export async function POST(request: NextRequest) {
       description: item.description,
     }));
 
-  // Agregar descuento como item negativo si existe
-  let _cappedDiscountAmount: number | undefined;
-  if (discountCode && discountAmount && discountAmount > 0) {
-      // Aplicar tope al descuento para evitar descuentos mayores al permitido
-      const DISCOUNT_CAP = 787;
-      const effectiveDiscount = Math.min(discountAmount, DISCOUNT_CAP);
-      preferenceItems.push({
-        id: `discount-${discountCode}`,
-        title: `Descuento (${discountCode})`,
-        quantity: 1,
-        unit_price: -effectiveDiscount, // Precio negativo para descuento
-        currency_id: "ARS",
-        category_id: undefined,
-        description: `Descuento aplicado: ${discountCode}`,
+    const subtotalBeforeCoupon = preferenceItems.reduce((sum, item) => {
+      const up = Number(item.unit_price ?? 0);
+      const q = Number(item.quantity ?? 0);
+      return sum + up * q;
+    }, 0);
+
+    let appliedDiscountCode: string | null = null;
+    let appliedDiscountAmount = 0;
+    if (discountCode) {
+      const couponResult = await validateCoupon({
+        code: discountCode,
+        subtotal: subtotalBeforeCoupon,
+        email,
       });
-      // Use effectiveDiscount later when persisting the order
-      // (we'll pass it explicitly to saveOrder)
-      // store in outer scoped variable for later
-      _cappedDiscountAmount = effectiveDiscount;
+
+      if (couponResult.valid && couponResult.discountAmount > 0) {
+        appliedDiscountCode = couponResult.code;
+        appliedDiscountAmount = couponResult.discountAmount;
+
+        preferenceItems.push({
+          id: `discount-${couponResult.code}`,
+          title: `Descuento (${couponResult.code})`,
+          quantity: 1,
+          unit_price: -couponResult.discountAmount,
+          currency_id: "ARS",
+          category_id: undefined,
+          description: `Descuento aplicado: ${couponResult.code}`,
+        });
+      }
     }
+
+    const totalWithDiscount = preferenceItems.reduce((sum, it) => {
+      const item = it as { unit_price?: number; quantity?: number };
+      const up = Number(item.unit_price ?? 0) || 0;
+      const q = Number(item.quantity ?? 0) || 0;
+      return sum + up * q;
+    }, 0);
 
     const preferenceData: PreferenceData = {
       items: preferenceItems,
@@ -121,8 +146,8 @@ export async function POST(request: NextRequest) {
         name,
         email,
         phone,
-        discountCode,
-        discountAmount,
+        discountCode: appliedDiscountCode,
+        discountAmount: appliedDiscountAmount,
         timestamp: Date.now(),
       }),
       payer: {
@@ -139,11 +164,14 @@ export async function POST(request: NextRequest) {
     console.log("Preference created:", response.id);
     console.log("Init point:", response.init_point);
 
-  // Persistir el pedido en Supabase para que los pedidos web queden registrados
-  let savedOrderId: string | undefined = undefined;
-  try {
+    // Persistir el pedido en Supabase para que los pedidos web queden registrados
+    let savedOrderId: string | undefined = undefined;
+    try {
       // Calcular totales
-      const totalMixQty = (items || []).reduce((sum, it) => sum + (Number(it.quantity) || 0), 0);
+      const totalMixQty = (items || []).reduce(
+        (sum, it) => sum + (Number(it.quantity) || 0),
+        0,
+      );
       const totalPrice = (preferenceData.items || []).reduce((sum, it) => {
         const item = it as { unit_price?: number; quantity?: number };
         const up = Number(item.unit_price ?? 0) || 0;
@@ -154,77 +182,92 @@ export async function POST(request: NextRequest) {
       savedOrderId = await saveOrder({
         name,
         email,
-        phone: phone ?? '',
+        phone: phone ?? "",
         items: items as unknown as OrderItem[],
         deliveryOption,
         deliveryAddress,
         totalPrice,
         totalMixQty,
-        paymentMethod: 'mercadopago',
+        paymentMethod: "mercadopago",
         paymentLink: response.init_point,
-        discountCode,
-        discountAmount: typeof _cappedDiscountAmount !== 'undefined' ? _cappedDiscountAmount : discountAmount,
+        discountCode: appliedDiscountCode,
+        discountAmount: appliedDiscountAmount,
       });
     } catch (err) {
-      console.error('Error saving order after creating preference:', err);
+      console.error("Error saving order after creating preference:", err);
       // No interrumpimos la respuesta al cliente; la preferencia ya fue creada.
     }
 
     // Enviar automáticamente el email con el link de pago (servidor-side)
     try {
       if (response.init_point) {
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || '';
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "";
         // Construir el body igual que lo hace el cliente cuando envía el email
         // Recalcular totales en el servidor (misma lógica usada arriba)
-        const serverTotalMixQty = (items || []).reduce((sum, it) => sum + (Number(it.quantity) || 0), 0);
-        const serverTotalPrice = (preferenceData.items || []).reduce((sum, it) => {
-          const item = it as { unit_price?: number; quantity?: number };
-          const up = Number(item.unit_price ?? 0) || 0;
-          const q = Number(item.quantity ?? 0) || 0;
-          return sum + up * q;
-        }, 0);
+        const serverTotalMixQty = (items || []).reduce(
+          (sum, it) => sum + (Number(it.quantity) || 0),
+          0,
+        );
+        const serverTotalPrice = (preferenceData.items || []).reduce(
+          (sum, it) => {
+            const item = it as { unit_price?: number; quantity?: number };
+            const up = Number(item.unit_price ?? 0) || 0;
+            const q = Number(item.quantity ?? 0) || 0;
+            return sum + up * q;
+          },
+          0,
+        );
 
         // Create a pay token for the order and send that in the email; the /pay route will redirect to existing init_point or create a fresh preference
         let paymentToken: string | undefined = undefined;
         try {
-          const { createPayToken } = await import('@/lib/payToken');
-            if (savedOrderId) paymentToken = createPayToken(savedOrderId);
+          const { createPayToken } = await import("@/lib/payToken");
+          if (savedOrderId) paymentToken = createPayToken(savedOrderId);
         } catch (err) {
-          console.error('Error creating payment token:', err);
+          console.error("Error creating payment token:", err);
         }
 
         const emailBody = {
           name,
           email,
-          phone: phone ?? '',
+          phone: phone ?? "",
           items: items,
           deliveryOption,
           deliveryAddress,
           totalPrice: serverTotalPrice,
           totalMixQty: serverTotalMixQty,
-          paymentMethod: 'mercadopago',
+          paymentMethod: "mercadopago",
           paymentLink: response.init_point,
           paymentToken,
-          discountCode,
-          discountAmount: typeof _cappedDiscountAmount !== 'undefined' ? _cappedDiscountAmount : discountAmount,
+          discountCode: appliedDiscountCode,
+          discountAmount: appliedDiscountAmount,
         };
 
         if (baseUrl) {
-          const sendResp = await fetch(`${baseUrl.replace(/\/$/, '')}/api/send-order-email`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(emailBody),
-          });
+          const sendResp = await fetch(
+            `${baseUrl.replace(/\/$/, "")}/api/send-order-email`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(emailBody),
+            },
+          );
           if (!sendResp.ok) {
-            const text = await sendResp.text().catch(() => 'no body');
-            console.error('server send-order-email failed:', sendResp.status, text);
+            const text = await sendResp.text().catch(() => "no body");
+            console.error(
+              "server send-order-email failed:",
+              sendResp.status,
+              text,
+            );
           }
         } else {
-          console.warn('NEXT_PUBLIC_BASE_URL not set; skipping server-side send-order-email');
+          console.warn(
+            "NEXT_PUBLIC_BASE_URL not set; skipping server-side send-order-email",
+          );
         }
       }
     } catch (err) {
-      console.error('Error sending order email from checkout route:', err);
+      console.error("Error sending order email from checkout route:", err);
       // no throw: prefer no-break the checkout
     }
 
@@ -232,33 +275,25 @@ export async function POST(request: NextRequest) {
       id: response.id,
       init_point: response.init_point,
       sandbox_init_point: response.sandbox_init_point,
-      // total amount actually sent to Mercado Pago (includes negative discount item)
-      totalAmount: typeof _cappedDiscountAmount !== 'undefined'
-        ? (preferenceData.items || []).reduce((sum, it) => {
-            const item = it as { unit_price?: number; quantity?: number };
-            const up = Number(item.unit_price ?? 0) || 0;
-            const q = Number(item.quantity ?? 0) || 0;
-            return sum + up * q;
-          }, 0)
-        : (preferenceData.items || []).reduce((sum, it) => {
-            const item = it as { unit_price?: number; quantity?: number };
-            const up = Number(item.unit_price ?? 0) || 0;
-            const q = Number(item.quantity ?? 0) || 0;
-            return sum + up * q;
-          }, 0),
+      totalAmount: totalWithDiscount,
+      discountCode: appliedDiscountCode,
+      discountAmount: appliedDiscountAmount,
     });
   } catch (error) {
     console.error("Error creating preference:", error);
-    if (error && typeof error === 'object' && 'message' in error) {
+    if (error && typeof error === "object" && "message" in error) {
       console.error("Error message:", error.message);
     }
-    if (error && typeof error === 'object' && 'cause' in error) {
+    if (error && typeof error === "object" && "cause" in error) {
       console.error("Error cause:", error.cause);
     }
-    const errorMessage = error instanceof Error ? error.message : "Error al crear la preferencia de pago";
+    const errorMessage =
+      error instanceof Error
+        ? error.message
+        : "Error al crear la preferencia de pago";
     return NextResponse.json(
       { error: errorMessage, details: error },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

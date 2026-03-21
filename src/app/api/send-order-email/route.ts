@@ -20,8 +20,21 @@ interface EmailBody {
 export async function POST(request: NextRequest) {
   try {
     console.log("Iniciando envío de email...");
-    const body = await request.json() as EmailBody;
-    const { name, email, phone, items, deliveryOption, deliveryAddress, totalPrice, totalMixQty, paymentLink, paymentMethod, discountCode, discountAmount } = body;
+    const body = (await request.json()) as EmailBody;
+    const {
+      name,
+      email,
+      phone,
+      items,
+      deliveryOption,
+      deliveryAddress,
+      totalPrice,
+      totalMixQty,
+      paymentLink,
+      paymentMethod,
+      discountCode,
+      discountAmount,
+    } = body;
 
     console.log("Datos recibidos:", {
       email,
@@ -32,15 +45,19 @@ export async function POST(request: NextRequest) {
       paymentMethod,
       totalPrice,
       discountCode,
-      discountAmount
+      discountAmount,
     });
 
     // Validar datos requeridos
     if (!email || !phone || !items || items.length === 0) {
-      console.error("Datos faltantes:", { email: !!email, phone: !!phone, items: items?.length });
+      console.error("Datos faltantes:", {
+        email: !!email,
+        phone: !!phone,
+        items: items?.length,
+      });
       return NextResponse.json(
         { error: "Hubo un error: Por favor intente nuevamente más tarde" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -49,7 +66,7 @@ export async function POST(request: NextRequest) {
       console.error("RESEND_API_KEY no está configurada");
       return NextResponse.json(
         { error: "Hubo un error: Por favor intente nuevamente más tarde" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -60,7 +77,7 @@ export async function POST(request: NextRequest) {
     const currency = new Intl.NumberFormat("es-AR", {
       style: "currency",
       currency: "ARS",
-      maximumFractionDigits: 0
+      maximumFractionDigits: 0,
     });
 
     // Función para detectar ingredientes que difieren entre mixes
@@ -68,14 +85,14 @@ export async function POST(request: NextRequest) {
       const differences = new Map<number, Set<string>>();
 
       items.forEach((item, index) => {
-        const match = (item.title ?? '').match(/^(.*?)\s*\((.*)\)$/);
+        const match = (item.title ?? "").match(/^(.*?)\s*\((.*)\)$/);
         if (!match) return;
 
         const composition = match[2];
         const currentIngredients = new Map<string, number>();
 
         // Parsear ingredientes del mix actual
-        composition.split(',').forEach(ing => {
+        composition.split(",").forEach((ing) => {
           const ingMatch = ing.trim().match(/^(.+?)\s+(\d+)%$/);
           if (ingMatch) {
             currentIngredients.set(ingMatch[1].trim(), parseInt(ingMatch[2]));
@@ -87,14 +104,16 @@ export async function POST(request: NextRequest) {
         // Comparar con otros Mixes
         items.forEach((otherItem, otherIndex) => {
           if (otherIndex !== index) {
-            const otherMatch = (otherItem.title ?? '').match(/^(.*?)\s*\((.*)\)$/);
+            const otherMatch = (otherItem.title ?? "").match(
+              /^(.*?)\s*\((.*)\)$/,
+            );
             if (!otherMatch) return;
 
             const otherComposition = otherMatch[2];
             const otherIngredients = new Map<string, number>();
 
             // Parsear ingredientes del otro mix
-            otherComposition.split(',').forEach(ing => {
+            otherComposition.split(",").forEach((ing) => {
               const ingMatch = ing.trim().match(/^(.+?)\s+(\d+)%$/);
               if (ingMatch) {
                 otherIngredients.set(ingMatch[1].trim(), parseInt(ingMatch[2]));
@@ -120,57 +139,65 @@ export async function POST(request: NextRequest) {
     const ingredientDifferences = getIngredientDifferences(items);
 
     // Generar HTML del resumen
-    const itemsHTML = items.map((item, index) => {
-      // Extraer composición del título (ej: "Mix personalizado (Pera 20%, ...)")
-      const match = (item.title ?? '').match(/^(.*?)\s*\((.*)\)$/);
-      const productName = match ? match[1] : (item.title ?? '');
-      let composition = match ? match[2] : '';
+    const itemsHTML = items
+      .map((item, index) => {
+        // Extraer composición del título (ej: "Mix personalizado (Pera 20%, ...)")
+        const match = (item.title ?? "").match(/^(.*?)\s*\((.*)\)$/);
+        const productName = match ? match[1] : (item.title ?? "");
+        let composition = match ? match[2] : "";
 
-      // Destacar ingredientes que difieren
-      if (composition && ingredientDifferences.has(index)) {
-        const differentIngredients = ingredientDifferences.get(index)!;
-        composition = composition.split(',').map(ing => {
-          const ingMatch = ing.trim().match(/^(.+?)\s+(\d+)%$/);
-          if (ingMatch) {
-            const ingredient = ingMatch[1].trim();
-            const percent = ingMatch[2];
-            if (differentIngredients.has(ingredient)) {
-              return `<strong style="color: #fbbf24;">${ingredient} ${percent}%</strong>`;
-            }
-          }
-          return ing.trim();
-        }).join(', ');
-      }
+        // Destacar ingredientes que difieren
+        if (composition && ingredientDifferences.has(index)) {
+          const differentIngredients = ingredientDifferences.get(index)!;
+          composition = composition
+            .split(",")
+            .map((ing) => {
+              const ingMatch = ing.trim().match(/^(.+?)\s+(\d+)%$/);
+              if (ingMatch) {
+                const ingredient = ingMatch[1].trim();
+                const percent = ingMatch[2];
+                if (differentIngredients.has(ingredient)) {
+                  return `<strong style="color: #fbbf24;">${ingredient} ${percent}%</strong>`;
+                }
+              }
+              return ing.trim();
+            })
+            .join(", ");
+        }
 
-      const qty = Number(item.quantity ?? 0);
-      const unit = Number(item.unit_price ?? 0);
-      const displayPrice = unit * qty;
-      const isSavingRow = displayPrice < 0;
+        const qty = Number(item.quantity ?? 0);
+        const unit = Number(item.unit_price ?? 0);
+        const displayPrice = unit * qty;
+        const isSavingRow = displayPrice < 0;
 
-      return `
-        <tr ${isSavingRow ? 'style="background-color: #f0fdf4;"' : ''}>
-          <td style="padding: 8px; border-bottom: 1px solid #eee; ${isSavingRow ? 'color: #16a34a;' : ''}">
+        return `
+        <tr ${isSavingRow ? 'style="background-color: #f0fdf4;"' : ""}>
+          <td style="padding: 8px; border-bottom: 1px solid #eee; ${isSavingRow ? "color: #16a34a;" : ""}">
             <strong>${productName}</strong>
-            ${composition ? `<br><span style="font-size: 13px; color: #666; line-height: 1.6;">${composition}</span>` : ''}
+            ${composition ? `<br><span style="font-size: 13px; color: #666; line-height: 1.6;">${composition}</span>` : ""}
           </td>
-          <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: center; ${isSavingRow ? 'color: #16a34a;' : ''}">${qty}</td>
-          <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right; white-space:nowrap; ${isSavingRow ? 'color: #16a34a;' : ''}">${currency.format(displayPrice)}</td>
+          <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: center; ${isSavingRow ? "color: #16a34a;" : ""}">${qty}</td>
+          <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right; white-space:nowrap; ${isSavingRow ? "color: #16a34a;" : ""}">${currency.format(displayPrice)}</td>
         </tr>
       `;
-    }).join('');
+      })
+      .join("");
 
     // Generar filas de ahorros
-    let ahorrosHTML = '';
+    let ahorrosHTML = "";
     const hasDeliveryLine = items.some((it) => {
-      const title = (it.title ?? '').toLowerCase();
-      return title.includes('envío') || title.includes('envio');
+      const title = (it.title ?? "").toLowerCase();
+      return title.includes("envío") || title.includes("envio");
     });
 
     const hasDiscountLine = items.some((it) => {
       const amount = Number(it.unit_price ?? 0) * Number(it.quantity ?? 0);
       if (amount >= 0) return false;
 
-      if (discountCode && (it.title ?? '').toUpperCase().includes(discountCode.toUpperCase())) {
+      if (
+        discountCode &&
+        (it.title ?? "").toUpperCase().includes(discountCode.toUpperCase())
+      ) {
         return true;
       }
 
@@ -194,18 +221,19 @@ export async function POST(request: NextRequest) {
     const n1 = rem;
 
     const precioSinPromo = Number(totalMixQty ?? 0) * PRICE_SINGLE;
-    const precioConPromo = n10 * PRICE_PACK10 + n5 * PRICE_PACK5 + n1 * PRICE_SINGLE;
+    const precioConPromo =
+      n10 * PRICE_PACK10 + n5 * PRICE_PACK5 + n1 * PRICE_SINGLE;
     const descuentoPromo = precioSinPromo - precioConPromo;
 
     const hasPromoLine = items.some((it) => {
       const amount = Number(it.unit_price ?? 0) * Number(it.quantity ?? 0);
       if (amount >= 0) return false;
-      return /promo/i.test(it.title ?? '');
+      return /promo/i.test(it.title ?? "");
     });
 
     const totalMixesEnItems = items.reduce((sum, it) => {
-      const title = (it.title ?? '').toLowerCase();
-      if (!title.includes('mix personalizado')) return sum;
+      const title = (it.title ?? "").toLowerCase();
+      if (!title.includes("mix personalizado")) return sum;
 
       const amount = Number(it.unit_price ?? 0) * Number(it.quantity ?? 0);
       if (amount <= 0) return sum;
@@ -214,11 +242,15 @@ export async function POST(request: NextRequest) {
 
     // Si los mixes ya vienen con precio promocional prorrateado, no agregar fila extra de ahorro.
     const promoYaEmbebida =
-      descuentoPromo > 0 &&
-      Math.abs(totalMixesEnItems - precioConPromo) <= 2;
+      descuentoPromo > 0 && Math.abs(totalMixesEnItems - precioConPromo) <= 2;
 
     // Ahorro por descuento por código
-    if (discountCode && discountAmount && discountAmount > 0 && !hasDiscountLine) {
+    if (
+      discountCode &&
+      discountAmount &&
+      discountAmount > 0 &&
+      !hasDiscountLine
+    ) {
       // Aplicar tope por seguridad (en caso de que venga mayor desde el cliente)
       const DISCOUNT_CAP = 787;
       const displayDiscountAmount = Math.min(discountAmount, DISCOUNT_CAP);
@@ -227,12 +259,15 @@ export async function POST(request: NextRequest) {
       let discountIsPercentage = false;
       let discountPercent = 0;
       try {
-        const mapEnv = process.env.NEXT_PUBLIC_DISCOUNT_MAP || '';
+        const mapEnv = process.env.NEXT_PUBLIC_DISCOUNT_MAP || "";
         if (mapEnv) {
-          const parsed = JSON.parse(mapEnv) as Record<string, { type: 'percentage' | 'fixed'; value: number }>;
-          const mapped = parsed[(discountCode || '').toUpperCase()];
+          const parsed = JSON.parse(mapEnv) as Record<
+            string,
+            { type: "percentage" | "fixed"; value: number }
+          >;
+          const mapped = parsed[(discountCode || "").toUpperCase()];
           if (mapped) {
-            if (mapped.type === 'percentage') {
+            if (mapped.type === "percentage") {
               discountIsPercentage = true;
               discountPercent = mapped.value;
             }
@@ -244,7 +279,7 @@ export async function POST(request: NextRequest) {
 
       // Fallback heurística si no viene en el mapa
       if (!discountIsPercentage) {
-        const numberMatch = (discountCode || '').toUpperCase().match(/(\d+)$/);
+        const numberMatch = (discountCode || "").toUpperCase().match(/(\d+)$/);
         if (numberMatch) {
           const num = parseInt(numberMatch[1]);
           if (numberMatch[1].length <= 2 && num > 0 && num <= 100) {
@@ -273,7 +308,8 @@ export async function POST(request: NextRequest) {
       const promoParts: string[] = [];
       if (n10 > 0) promoParts.push(`${n10} de 10 Mixes`);
       if (n5 > 0) promoParts.push(`${n5} de 5 Mixes`);
-      const promoLabel = promoParts.length > 0 ? ` (${promoParts.join(' + ')})` : '';
+      const promoLabel =
+        promoParts.length > 0 ? ` (${promoParts.join(" + ")})` : "";
 
       ahorrosHTML += `
         <tr style="background-color: #f0fdf4;">
@@ -286,7 +322,9 @@ export async function POST(request: NextRequest) {
       `;
     }
 
-    const deliveryRowHTML = deliveryOption === "envio" && !hasDeliveryLine ? `
+    const deliveryRowHTML =
+      deliveryOption === "envio" && !hasDeliveryLine
+        ? `
                 <tr>
                   <td style="padding: 8px; border-bottom: 1px solid #eee;">
                     <strong>Envío a Córdoba</strong>
@@ -294,21 +332,24 @@ export async function POST(request: NextRequest) {
                   <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: center;">1</td>
                   <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right; white-space:nowrap;">${currency.format(1000)}</td>
                 </tr>
-                ` : '';
+                `
+        : "";
 
-    const deliveryText = deliveryOption === "ciudad"
-      ? "Ciudad Universitaria (Envío gratuito)"
-      : deliveryOption === "sagrada"
-        ? "Sagrada Familia 672 (Envío gratuito)"
-        : `Córdoba (${currency.format(1000)})`;
+    const deliveryText =
+      deliveryOption === "ciudad"
+        ? "Ciudad Universitaria (Envío gratuito)"
+        : deliveryOption === "sagrada"
+          ? "Sagrada Familia 672 (Envío gratuito)"
+          : `Córdoba (${currency.format(1000)})`;
 
     console.log("Enviando email...");
 
     let result;
     try {
-      const emailSubject = paymentMethod === 'efectivo'
-        ? `📱 ¡${name ? name + ', ' : ''}tu pedido está confirmado! Te contactaremos por WhatsApp`
-        : `🎉 ¡${name ? name + ', ' : ''}tu pedido de Frutos Secos está casi listo!`;
+      const emailSubject =
+        paymentMethod === "efectivo"
+          ? `📱 ¡${name ? name + ", " : ""}tu pedido está confirmado! Te contactaremos por WhatsApp`
+          : `🎉 ¡${name ? name + ", " : ""}tu pedido de Frutos Secos está casi listo!`;
 
       // Persist order to orders datastore (Supabase) and generate pay token
       let savedOrderId: string | null = null;
@@ -329,17 +370,17 @@ export async function POST(request: NextRequest) {
         });
         savedOrderId = id;
       } catch (err) {
-        console.error('Error persisting order:', err);
+        console.error("Error persisting order:", err);
       }
 
       // If no direct paymentLink provided, create a pay token so the email can include /pay/{token}
       let paymentToken: string | undefined = undefined;
       if (!paymentLink && savedOrderId) {
         try {
-          const { createPayToken } = await import('@/lib/payToken');
+          const { createPayToken } = await import("@/lib/payToken");
           paymentToken = createPayToken(savedOrderId);
         } catch (err) {
-          console.error('Error creating payment token:', err);
+          console.error("Error creating payment token:", err);
         }
       }
 
@@ -353,19 +394,29 @@ export async function POST(request: NextRequest) {
       `;
 
       // If we have a direct paymentLink prefer it; otherwise use pay token link that will create/redirect on-demand
-      const payHref = paymentLink ? paymentLink : (paymentToken && process.env.NEXT_PUBLIC_BASE_URL ? `${process.env.NEXT_PUBLIC_BASE_URL.replace(/\/$/, '')}/pay/${paymentToken}` : '');
-      const payButton = payHref ? (`
+      const payHref = paymentLink
+        ? paymentLink
+        : paymentToken && process.env.NEXT_PUBLIC_BASE_URL
+          ? `${process.env.NEXT_PUBLIC_BASE_URL.replace(/\/$/, "")}/pay/${paymentToken}`
+          : "";
+      const payButton = payHref
+        ? `
         <a href="${payHref}" style="display:inline-block; height:48px; line-height:48px; background-color:#fbbf24; color:#000; padding:0 14px; text-decoration:none; border-radius:8px; font-weight:700; vertical-align:middle;">
           <span style="display:inline-block; vertical-align:middle; line-height:1;">💳 Pagar ahora con Mercado Pago</span>
         </a>
-      `) : '';
+      `
+        : "";
 
       // Use a simple spacer element between buttons (more compatible than flex gap in some email clients)
-      const spacer = payButton ? '<span style="display:inline-block; width:10px; height:1px;"></span>' : '';
+      const spacer = payButton
+        ? '<span style="display:inline-block; width:10px; height:1px;"></span>'
+        : "";
       const buttonsRow = `<div style="text-align:center; margin-top:16px;">${whatsappButton}${spacer}${payButton}</div>`;
 
       // Small hint shown below buttons when a Mercado Pago button is available
-      const mpNote = payButton ? `<p style="margin-top:8px; font-size:14px; color:#333;">Si preferís pagar ahora, usá el botón de Mercado Pago (pago seguro y rápido).</p>` : '';
+      const mpNote = payButton
+        ? `<p style="margin-top:8px; font-size:14px; color:#333;">Si preferís pagar ahora, usá el botón de Mercado Pago (pago seguro y rápido).</p>`
+        : "";
 
       const efectivoBlock = `
         <div style="background-color: #dbeafe; border-left: 4px solid #3b82f6; padding: 16px; margin: 20px 0; border-radius: 4px;">
@@ -383,7 +434,8 @@ export async function POST(request: NextRequest) {
         </div>
       `;
 
-      const actionBlock = (paymentMethod === 'efectivo') ? efectivoBlock : nonEfectivoBlock;
+      const actionBlock =
+        paymentMethod === "efectivo" ? efectivoBlock : nonEfectivoBlock;
 
       result = await resend.emails.send({
         from: "Gonza de Moovimiento <gonza@moovimiento.com>",
@@ -397,7 +449,7 @@ export async function POST(request: NextRequest) {
           </div>
           <div style="background-color: #f9f9f9; padding: 20px; border-radius: 0 0 8px 8px;">
             <h1 style="font-size: 28px; color: #fbbf24;">🤩 ¡Pedido casi listo!</h1>
-            <p style="font-size: 18px;">¡Hola${name ? ` ${name}` : ''}! 👋</p>
+            <p style="font-size: 18px;">¡Hola${name ? ` ${name}` : ""}! 👋</p>
             <p>Gracias por armar tu mix personalizado con nosotros. Acá te dejamos el resumen de tu pedido:</p>
 
             <h3>Detalle del pedido:</h3>
@@ -435,7 +487,7 @@ export async function POST(request: NextRequest) {
             <table style="width:100%; background-color: #f3f4f6; padding: 12px; margin: 20px 0; border-radius: 4px; border-collapse: collapse;">
               <tr>
                 <td style="padding: 12px; vertical-align: middle;">
-                  <strong style="font-size: 20px;">${paymentMethod === 'efectivo' ? 'Total a pagar en efectivo:' : 'Total a pagar:'}</strong>
+                  <strong style="font-size: 20px;">${paymentMethod === "efectivo" ? "Total a pagar en efectivo:" : "Total a pagar:"}</strong>
                 </td>
                 <td style="padding: 12px; text-align: right; vertical-align: middle; white-space:nowrap; font-size: 20px; font-weight: bold;">${currency.format(totalPrice)}</td>
               </tr>
@@ -470,7 +522,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(
       { error: "Hubo un error: Por favor intente nuevamente más tarde" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
