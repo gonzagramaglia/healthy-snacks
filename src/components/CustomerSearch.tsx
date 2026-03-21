@@ -156,14 +156,14 @@ export function CustomerSearch({ lang }: { lang: Language }) {
                 <p className="text-center md:text-left">
                   <strong>
                     🎟️ Every purchase of 1, 2, 3, or 4 Mixes adds steps
-                  </strong>{" "}
+                  </strong>
                   <span className="md:hidden">
-                    Once you hit the goal, you can redeem your coupon for 1 free
-                    Mix!
+                    . Once you hit the goal, you can redeem your coupon for 1
+                    free Mix!
                   </span>
                   <span className="hidden md:inline">
-                    Once you hit the goal, you can redeem your coupon for 1 free
-                    Mix and an extra surprise gift!
+                    . Once you hit the goal, you can redeem your coupon for 1
+                    free Mix and an extra surprise gift!
                   </span>
                   <span className="relative hidden md:inline-flex align-middle ml-1 group/info select-none cursor-default">
                     <span

@@ -38,14 +38,21 @@ export function FAQ({ lang }: FAQProps) {
 
           <button
             onClick={handleCopy}
-            className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors border-b border-muted-foreground/30 hover:border-foreground group cursor-pointer"
+            className="relative inline-flex items-center text-muted-foreground hover:text-foreground transition-colors border-b border-muted-foreground/30 hover:border-foreground group cursor-pointer"
           >
             <span>{t.faq_contact_email}</span>
-            {copied ? (
-              <Check className="w-4 h-4 text-green-500" />
-            ) : (
-              <Copy className="w-4 h-4 opacity-50 group-hover:opacity-100 transition-opacity" />
-            )}
+            <span className="absolute left-full ml-2 inline-flex items-center gap-1 min-w-[72px]">
+              {copied ? (
+                <>
+                  <Check className="w-4 h-4 text-green-500" />
+                  <span className="text-xs text-green-500 font-medium whitespace-nowrap">
+                    {lang === "es" ? "¡Copiado!" : "Copied!"}
+                  </span>
+                </>
+              ) : (
+                <Copy className="w-4 h-4 opacity-50 group-hover:opacity-100 transition-opacity" />
+              )}
+            </span>
           </button>
         </div>
 

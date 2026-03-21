@@ -339,7 +339,7 @@ export async function POST(request: NextRequest) {
       deliveryOption === "ciudad"
         ? "Ciudad Universitaria (Envío gratuito)"
         : deliveryOption === "sagrada"
-          ? "Sagrada Familia 672 (Envío gratuito)"
+          ? "Punto de encuentro (Envío gratuito)"
           : `Córdoba (${currency.format(1000)})`;
 
     console.log("Enviando email...");
