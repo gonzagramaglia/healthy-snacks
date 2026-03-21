@@ -531,7 +531,7 @@ export function MixBuilder({ lang = "es" }: { lang?: Language }) {
   }, [isClassicMix, isValid, shakeClassicMix]);
 
   return (
-    <div className="mx-auto max-w-5xl px-6 space-y-6 pb-8">
+    <div className="mx-auto max-w-5xl px-6 space-y-6 pb-24">
       <div className="flex flex-col items-center md:flex-row md:items-center md:justify-between gap-1 text-center md:text-left">
         <h2 className="hidden md:block text-2xl font-semibold">
           {t.builder_title}

@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Language } from "@/lib/dictionary";
 import { User, ArrowRight, Mail } from "lucide-react";
 
 export function CustomerSearch({ lang }: { lang: Language }) {
   const sampleProgress = 7;
+  const [showSurpriseInfo, setShowSurpriseInfo] = useState(false);
+  const surpriseInfoTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [username, setUsername] = useState("");
   const [showRegister, setShowRegister] = useState(false);
   const [registerName, setRegisterName] = useState("");
@@ -21,6 +23,20 @@ export function CustomerSearch({ lang }: { lang: Language }) {
       setShowRegister(true);
     }
   }, [searchParams]);
+
+  useEffect(() => {
+    return () => {
+      if (surpriseInfoTimerRef.current) clearTimeout(surpriseInfoTimerRef.current);
+    };
+  }, []);
+
+  const handleSurpriseInfoClick = () => {
+    setShowSurpriseInfo(true);
+    if (surpriseInfoTimerRef.current) clearTimeout(surpriseInfoTimerRef.current);
+    surpriseInfoTimerRef.current = setTimeout(() => {
+      setShowSurpriseInfo(false);
+    }, 3000);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,49 +71,88 @@ export function CustomerSearch({ lang }: { lang: Language }) {
         <div className="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-colors duration-500" />
 
         <div className="relative z-10 flex-1 space-y-3">
-          <h3 className="text-2xl md:text-3xl font-bold tracking-tight">
-            {lang === "es"
-              ? "Beneficios para clientes habituales"
-              : "Benefits for regular customers"}
-          </h3>
-          <p className="text-muted-foreground text-sm max-w-xl">
-            {lang === "es"
-              ? "Ingresá tu usuario para ver tu progreso hacia los próximos regalos."
-              : "Enter your username to view accumulated individual Mix purchases, active coupons, and your progress to the next gift."}
-          </p>
-
-          <div className="text-xs text-foreground/80 max-w-xl bg-background/60 border border-primary/15 rounded-xl px-3 py-2">
+          <h3 className="text-2xl md:text-3xl font-bold tracking-tight text-center md:text-left">
             {lang === "es" ? (
               <>
-                <strong>🎟️ Cada compra de 1, 2, 3 o 4 Mixes suma pasos.</strong>{" "}
-                Al llegar a la meta, vas a poder canjear tu cupón por 1 Mix
-                gratuito y otro regalo sorpresa.
+                Beneficios para
+                <span className="block md:inline"> clientes habituales</span>
               </>
             ) : (
-              "🎟️ Each purchase of 1 to 4 individual Mixes adds 1 step. When you reach the goal, your coupon/gift is unlocked automatically."
+              "Benefits for regular customers"
             )}
-          </div>
+          </h3>
+          <p className="text-muted-foreground text-sm max-w-xl text-center md:text-left">
+            {lang === "es" ? (
+              <>
+                Ingresá tu usuario para ver tu progreso
+                <span className="block md:inline"> hacia los próximos regalos</span>
+              </>
+            ) : (
+              "Enter your username to view accumulated individual Mix purchases, active coupons, and your progress to the next gift."
+            )}
+          </p>
 
-          <div className="max-w-xl bg-card/80 border border-primary/15 rounded-xl px-3 py-3">
-            <p className="text-[11px] text-muted-foreground mb-2">
-              {lang === "es"
-                ? "Ejemplo de progreso (7/10):"
-                : "Progress example (7/10):"}
-            </p>
-            <div className="grid grid-cols-10 gap-1.5">
-              {Array.from({ length: 10 }).map((_, i) => (
-                <div
-                  key={i}
-                  className={`h-6 rounded-md border text-[10px] flex items-center justify-center font-bold ${
-                    i < sampleProgress
-                      ? "bg-primary border-primary text-primary-foreground"
-                      : "border-dashed border-muted-foreground/30 text-muted-foreground/50 bg-muted/40"
-                  }`}
-                >
-                  {i === 9 ? "🎁" : i + 1}
+          <div className="text-xs text-foreground/80 max-w-xl bg-background/60 border border-primary/15 rounded-xl px-3 py-3 space-y-3">
+            {lang === "es" ? (
+              <div>
+                <p className="text-center md:text-left">
+                  <strong>🎟️ Cada compra de 1, 2, 3 o 4 Mixes suma pasos</strong>{" "}
+                  <span className="md:hidden">¡Al llegar a la meta, vas a poder canjear tu cupón por 1 Mix gratuito!</span>
+                  <span className="hidden md:inline">¡Al llegar a la meta, vas a poder canjear tu cupón por 1 Mix gratuito y otro regalo sorpresa!</span>
+                  <span className="relative hidden md:inline-flex align-middle ml-1 group/info select-none cursor-default">
+                    <span
+                      onClick={handleSurpriseInfoClick}
+                      className="inline-flex items-center justify-center w-4 h-4 rounded-full border border-primary/40 text-[10px] font-bold text-primary select-none cursor-default"
+                    >
+                      ?
+                    </span>
+                    <span className={`pointer-events-none absolute left-1/2 top-[calc(100%+6px)] -translate-x-1/2 z-20 w-64 rounded-md border border-primary/20 bg-background px-2 py-1.5 text-[11px] font-medium text-primary text-center shadow-md transition-opacity duration-150 select-none cursor-default ${showSurpriseInfo ? "opacity-100" : "opacity-0 group-hover/info:opacity-100"}`}>
+                      Puede incluir descuentos en próximas compras o en locales adheridos
+                    </span>
+                  </span>
+                </p>
+                <p className="text-[11px] text-muted-foreground font-bold mt-2 mb-2 text-center md:text-left">
+                  Ejemplo de progreso (7/10):
+                </p>
+                <div className="grid grid-cols-10 gap-1.5">
+                  {Array.from({ length: 10 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className={`h-6 rounded-md border text-[10px] flex items-center justify-center font-bold ${
+                        i < sampleProgress
+                          ? "bg-primary border-primary text-primary-foreground"
+                          : "border-dashed border-muted-foreground/30 text-muted-foreground/50 bg-muted/40"
+                      }`}
+                    >
+                      {i === 9 ? "🎁" : i + 1}
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </div>
+            ) : (
+              <div>
+                <p>
+                  🎟️ Each purchase of 1 to 4 individual Mixes adds 1 step. When you reach the goal, your coupon/gift is unlocked automatically.
+                </p>
+                <p className="text-[11px] text-muted-foreground font-bold mt-2 mb-2 text-center md:text-left">
+                  Progress example (7/10):
+                </p>
+                <div className="grid grid-cols-10 gap-1.5">
+                  {Array.from({ length: 10 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className={`h-6 rounded-md border text-[10px] flex items-center justify-center font-bold ${
+                        i < sampleProgress
+                          ? "bg-primary border-primary text-primary-foreground"
+                          : "border-dashed border-muted-foreground/30 text-muted-foreground/50 bg-muted/40"
+                      }`}
+                    >
+                      {i === 9 ? "🎁" : i + 1}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -137,7 +192,7 @@ export function CustomerSearch({ lang }: { lang: Language }) {
                 router.push(`${prefix}?register=1`);
                 setShowRegister(true);
               }}
-              className="text-xs text-primary hover:underline cursor-pointer w-full text-left"
+              className="text-xs text-primary hover:underline cursor-pointer w-full text-center md:text-left"
             >
               {lang === "es"
                 ? "¿Todavía no tenés usuario? Crealo ahora"

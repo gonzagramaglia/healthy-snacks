@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import Image from "next/image";
 import { Source_Sans_3 } from "next/font/google";
 import Link from "next/link";
@@ -139,7 +140,11 @@ export function MainContent({
           </div>
         </section>
         {benefitsMode === "teaser" ? <BenefitsTeaser lang={lang} /> : null}
-        {benefitsMode === "hub" ? <CustomerSearch lang={lang} /> : null}
+        {benefitsMode === 'hub' ? (
+          <Suspense fallback={null}>
+            <CustomerSearch lang={lang} />
+          </Suspense>
+        ) : null}
         {(benefitsMode === "hub" || benefitsMode === "coupon") &&
         customerData ? (
           <CustomerCoupon data={customerData} lang={lang} />
