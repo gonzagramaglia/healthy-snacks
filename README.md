@@ -29,14 +29,29 @@
 
 ---
 
+## 🗄️ Supabase (fresh start)
+
+If you created a brand new Supabase project:
+
+1. Copy [env.example](env.example) to `.env.local`.
+2. Fill `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY`.
+3. Run the SQL in [supabase/schema.sql](supabase/schema.sql) in Supabase SQL Editor.
+4. Manage coupons in table `public.coupons`.
+
+Coupons are now validated on the server via [src/app/api/coupons/validate/route.ts](src/app/api/coupons/validate/route.ts) and enforced again during checkout in [src/app/api/checkout/route.ts](src/app/api/checkout/route.ts).
+
+---
+
 ## 🕹 Usage
 
 ### 🥣 Build a Mix
+
 1. Explore the variety of nuts, seeds, and dried fruits.
 2. Select your favorite ingredients until you complete the 220g.
 3. Visualize the cost and nutritional composition (if applicable) in real-time.
 
 ### 🛒 Complete the Order
+
 1. Enter your shipping and billing details.
 2. Proceed to secure payment via Mercado Pago.
 3. Receive confirmation via email and status notifications.
