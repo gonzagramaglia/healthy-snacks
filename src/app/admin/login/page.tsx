@@ -101,40 +101,42 @@ export default function AdminLoginPage() {
         </div>
 
         <Card className="w-full">
-        <CardContent className="space-y-4">
-          {error && (
-            <div className="bg-red-50 dark:bg-red-950 text-red-700 dark:text-red-200 p-3 rounded text-sm">
-              {error}
-            </div>
-          )}
+          <CardContent className="space-y-4">
+            {error && (
+              <div className="bg-red-50 dark:bg-red-950 text-red-700 dark:text-red-200 p-3 rounded text-sm">
+                {error}
+              </div>
+            )}
 
-          <form onSubmit={handlePasswordSignIn} className="space-y-3">
-            <div>
-              <label className="block text-sm font-medium mb-1">Email</label>
-              <Input
-                type="email"
-                value="gonza@moovimiento.com"
-                readOnly
-                placeholder="admin@moovimiento.com"
-                disabled
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Password</label>
-              <Input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                disabled={loading}
-                required
-              />
-            </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Signing in..." : "Sign In"}
-            </Button>
-          </form>
-        </CardContent>
+            <form onSubmit={handlePasswordSignIn} className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium mb-1">Email</label>
+                <Input
+                  type="email"
+                  value="gonza@moovimiento.com"
+                  readOnly
+                  placeholder="admin@moovimiento.com"
+                  disabled
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Password
+                </label>
+                <Input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  disabled={loading}
+                  required
+                />
+              </div>
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? "Signing in..." : "Sign In"}
+              </Button>
+            </form>
+          </CardContent>
         </Card>
       </div>
     </div>

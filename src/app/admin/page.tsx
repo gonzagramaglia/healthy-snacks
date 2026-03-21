@@ -58,7 +58,9 @@ export default function AdminPage() {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-4xl font-bold">Admin Dashboard</h1>
-            <p className="text-muted-foreground mt-2">Logged in as: gonza@moovimiento.com</p>
+            <p className="text-muted-foreground mt-2">
+              Logged in as: gonza@moovimiento.com
+            </p>
           </div>
           <Button
             variant="outline"

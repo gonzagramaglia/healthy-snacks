@@ -54,35 +54,38 @@ export default function CouponsPage() {
     allowed_email: "" as string | null,
   });
 
-  const fetchCoupons = useCallback(async (pass?: string) => {
-    const currentPass = pass || adminPass;
-    if (!currentPass) return;
+  const fetchCoupons = useCallback(
+    async (pass?: string) => {
+      const currentPass = pass || adminPass;
+      if (!currentPass) return;
 
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch("/api/admin/coupons", {
-        headers: {
-          "Content-Type": "application/json",
-          "x-admin-password": currentPass,
-        },
-      });
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await fetch("/api/admin/coupons", {
+          headers: {
+            "Content-Type": "application/json",
+            "x-admin-password": currentPass,
+          },
+        });
 
-      if (res.status === 401) {
-        window.localStorage.removeItem("admin_password");
-        router.push("/admin/login");
-        return;
+        if (res.status === 401) {
+          window.localStorage.removeItem("admin_password");
+          router.push("/admin/login");
+          return;
+        }
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Failed to load coupons");
+        setCoupons(data.coupons || []);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to load coupons");
+      } finally {
+        setLoading(false);
       }
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to load coupons");
-      setCoupons(data.coupons || []);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load coupons");
-    } finally {
-      setLoading(false);
-    }
-  }, [adminPass, router]);
+    },
+    [adminPass, router],
+  );
 
   useEffect(() => {
     const checkAuth = async () => {

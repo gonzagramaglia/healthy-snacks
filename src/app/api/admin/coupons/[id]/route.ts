@@ -3,7 +3,9 @@ import { createAdminClient } from "@/lib/supabase/admin";
 
 function isAuthorized(request: NextRequest) {
   const adminPass = request.headers.get("x-admin-password") || "";
-  return !!process.env.ADMIN_PASSWORD && adminPass === process.env.ADMIN_PASSWORD;
+  return (
+    !!process.env.ADMIN_PASSWORD && adminPass === process.env.ADMIN_PASSWORD
+  );
 }
 
 export async function PATCH(
@@ -20,7 +22,9 @@ export async function PATCH(
     const supabase = createAdminClient();
 
     const payload = {
-      code: String(body.code || "").trim().toUpperCase(),
+      code: String(body.code || "")
+        .trim()
+        .toUpperCase(),
       type: body.type,
       value: Number(body.value || 0),
       max_discount:
@@ -36,7 +40,9 @@ export async function PATCH(
         body.usage_limit === null || body.usage_limit === undefined
           ? null
           : Number(body.usage_limit),
-      allowed_email: body.allowed_email ? String(body.allowed_email).trim() : null,
+      allowed_email: body.allowed_email
+        ? String(body.allowed_email).trim()
+        : null,
     };
 
     const { data, error } = await supabase
