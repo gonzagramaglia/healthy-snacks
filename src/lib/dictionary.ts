@@ -115,6 +115,16 @@ export const dictionary = {
 
     send_whatsapp: "Enviar pedido por WhatsApp",
 
+    // Customer coupon
+    coupon_title: "Tu cupón de fidelidad",
+    coupon_subtitle:
+      "Completá los 10 casilleros y te llevás 1 Mix gratis en tu próximo pedido.",
+    coupon_last_updated: "Última actualización: {date}",
+    coupon_not_user: "¿No sos {name}?",
+    coupon_not_user_action: "Buscá tu cupón acá",
+    coupon_status_full: "¡Cupón completo! Tenés 1 Mix gratis 🎉",
+    coupon_status_regular: "Progreso: {count}/10 casilleros",
+
     // Promo logic text (generated)
     promo_mixes: "Mixes",
     promo_of: "de",
@@ -273,6 +283,16 @@ export const dictionary = {
     discounts: "Discounts",
 
     send_whatsapp: "Send order via WhatsApp",
+
+    // Customer coupon
+    coupon_title: "Your loyalty coupon",
+    coupon_subtitle:
+      "Fill all 10 slots and get 1 free Mix on your next order.",
+    coupon_last_updated: "Last updated: {date}",
+    coupon_not_user: "Not {name}?",
+    coupon_not_user_action: "Find your coupon here",
+    coupon_status_full: "Coupon complete! You got 1 free Mix 🎉",
+    coupon_status_regular: "Progress: {count}/10 slots",
 
     // Promo logic text
     promo_mixes: "Mixes",
