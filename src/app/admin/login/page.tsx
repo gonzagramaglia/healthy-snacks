@@ -1,72 +1,64 @@
 "use client";
 
+import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 
 export default function AdminLoginPage() {
   const router = useRouter();
-  const supabase = createClient();
-  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [checkingAuth, setCheckingAuth] = useState(true);
 
   useEffect(() => {
-    // Check if already logged in
     const checkAuth = async () => {
-      const { data } = await supabase.auth.getUser();
-      if (data?.user) {
-        router.push("/admin");
+      const storedPass = window.localStorage.getItem("admin_password") || "";
+      if (!storedPass) {
+        setCheckingAuth(false);
+        return;
       }
+
+      try {
+        const res = await fetch("/api/admin/orders", {
+          headers: { "x-admin-password": storedPass },
+        });
+        if (res.ok) {
+          router.push("/admin");
+          return;
+        }
+      } catch {
+        // ignore and show login
+      }
+
+      window.localStorage.removeItem("admin_password");
       setCheckingAuth(false);
     };
-    checkAuth();
-  }, [supabase, router]);
 
-  const handleEmailSignIn = async (e: React.FormEvent) => {
+    checkAuth();
+  }, [router]);
+
+  const handlePasswordSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+      const res = await fetch("/api/admin/orders", {
+        headers: { "x-admin-password": password },
       });
 
-      if (error) {
-        setError(error.message);
+      if (!res.ok) {
+        setError("Invalid password");
         return;
       }
 
+      window.localStorage.setItem("admin_password", password);
       router.push("/admin");
-    } catch {
-      setError("An unexpected error occurred");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGoogleSignIn = async () => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-        },
-      });
-
-      if (error) {
-        setError(error.message);
-      }
     } catch {
       setError("An unexpected error occurred");
     } finally {
@@ -83,11 +75,32 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Admin Login</CardTitle>
-        </CardHeader>
+    <div className="flex items-center justify-center min-h-screen bg-background px-4">
+      <div className="w-full max-w-md space-y-4">
+        <div className="flex justify-center">
+          <Link
+            href="/en"
+            aria-label="Go to home"
+            className="relative h-12 w-12 cursor-pointer"
+          >
+            <Image
+              src="/moovimiento.png"
+              alt="Moovimiento"
+              fill
+              className="block dark:hidden object-contain"
+              priority
+            />
+            <Image
+              src="/moovimiento-white.png"
+              alt="Moovimiento"
+              fill
+              className="hidden dark:block object-contain"
+              priority
+            />
+          </Link>
+        </div>
+
+        <Card className="w-full">
         <CardContent className="space-y-4">
           {error && (
             <div className="bg-red-50 dark:bg-red-950 text-red-700 dark:text-red-200 p-3 rounded text-sm">
@@ -95,16 +108,15 @@ export default function AdminLoginPage() {
             </div>
           )}
 
-          <form onSubmit={handleEmailSignIn} className="space-y-3">
+          <form onSubmit={handlePasswordSignIn} className="space-y-3">
             <div>
               <label className="block text-sm font-medium mb-1">Email</label>
               <Input
                 type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value="gonza@moovimiento.com"
+                readOnly
                 placeholder="admin@moovimiento.com"
-                disabled={loading}
-                required
+                disabled
               />
             </div>
             <div>
@@ -119,31 +131,12 @@ export default function AdminLoginPage() {
               />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Signing in..." : "Sign In with Email"}
+              {loading ? "Signing in..." : "Sign In"}
             </Button>
           </form>
-
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-background text-muted-foreground">
-                Or
-              </span>
-            </div>
-          </div>
-
-          <Button
-            onClick={handleGoogleSignIn}
-            variant="outline"
-            className="w-full"
-            disabled={loading}
-          >
-            {loading ? "Signing in..." : "Sign In with Google"}
-          </Button>
         </CardContent>
-      </Card>
+        </Card>
+      </div>
     </div>
   );
 }

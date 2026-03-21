@@ -2,33 +2,43 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
-import type { User } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import Link from "next/link";
 
 export default function AdminPage() {
   const router = useRouter();
-  const [user, setUser] = useState<User | null>(null);
+  const [adminPass, setAdminPass] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const supabase = createClient();
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { data } = await supabase.auth.getUser();
-
-      if (!data?.user) {
+      const storedPass = window.localStorage.getItem("admin_password") || "";
+      if (!storedPass) {
         router.push("/admin/login");
         return;
       }
 
-      setUser(data.user);
+      try {
+        const res = await fetch("/api/admin/orders", {
+          headers: { "x-admin-password": storedPass },
+        });
+        if (!res.ok) {
+          window.localStorage.removeItem("admin_password");
+          router.push("/admin/login");
+          return;
+        }
+      } catch {
+        router.push("/admin/login");
+        return;
+      }
+
+      setAdminPass(storedPass);
       setIsLoading(false);
     };
 
     checkAuth();
-  }, [supabase, router]);
+  }, [router]);
 
   if (isLoading) {
     return (
@@ -38,7 +48,7 @@ export default function AdminPage() {
     );
   }
 
-  if (!user) {
+  if (!adminPass) {
     return null;
   }
 
@@ -48,14 +58,12 @@ export default function AdminPage() {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-4xl font-bold">Admin Dashboard</h1>
-            <p className="text-muted-foreground mt-2">
-              Logged in as: {user.email}
-            </p>
+            <p className="text-muted-foreground mt-2">Logged in as: gonza@moovimiento.com</p>
           </div>
           <Button
             variant="outline"
-            onClick={async () => {
-              await supabase.auth.signOut();
+            onClick={() => {
+              window.localStorage.removeItem("admin_password");
               router.push("/admin/login");
             }}
           >

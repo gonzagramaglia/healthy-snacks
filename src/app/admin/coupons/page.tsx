@@ -2,8 +2,6 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
-import type { User } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -39,8 +37,7 @@ type CouponForm = {
 
 export default function CouponsPage() {
   const router = useRouter();
-  const supabase = createClient();
-  const [user, setUser] = useState<User | null>(null);
+  const [adminPass, setAdminPass] = useState("");
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -57,36 +54,50 @@ export default function CouponsPage() {
     allowed_email: "" as string | null,
   });
 
-  const fetchCoupons = useCallback(async () => {
+  const fetchCoupons = useCallback(async (pass?: string) => {
+    const currentPass = pass || adminPass;
+    if (!currentPass) return;
+
     setLoading(true);
     setError(null);
     try {
-      const { data, error: err } = await supabase
-        .from("coupons")
-        .select("*")
-        .order("created_at", { ascending: false });
+      const res = await fetch("/api/admin/coupons", {
+        headers: {
+          "Content-Type": "application/json",
+          "x-admin-password": currentPass,
+        },
+      });
 
-      if (err) throw err;
-      setCoupons(data || []);
+      if (res.status === 401) {
+        window.localStorage.removeItem("admin_password");
+        router.push("/admin/login");
+        return;
+      }
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to load coupons");
+      setCoupons(data.coupons || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load coupons");
     } finally {
       setLoading(false);
     }
-  }, [supabase]);
+  }, [adminPass, router]);
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { data } = await supabase.auth.getUser();
-      if (!data?.user) {
+      const storedPass = window.localStorage.getItem("admin_password") || "";
+      if (!storedPass) {
         router.push("/admin/login");
         return;
       }
-      setUser(data.user);
-      await fetchCoupons();
+
+      setAdminPass(storedPass);
+      await fetchCoupons(storedPass);
     };
+
     checkAuth();
-  }, [supabase, router, fetchCoupons]);
+  }, [router, fetchCoupons]);
 
   const handleSaveCoupon = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,16 +105,27 @@ export default function CouponsPage() {
 
     try {
       if (editingId) {
-        const { error: err } = await supabase
-          .from("coupons")
-          .update(formData)
-          .eq("id", editingId);
-        if (err) throw err;
+        const res = await fetch(`/api/admin/coupons/${editingId}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            "x-admin-password": adminPass,
+          },
+          body: JSON.stringify(formData),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Failed to update coupon");
       } else {
-        const { error: err } = await supabase
-          .from("coupons")
-          .insert([formData]);
-        if (err) throw err;
+        const res = await fetch("/api/admin/coupons", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-admin-password": adminPass,
+          },
+          body: JSON.stringify(formData),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Failed to create coupon");
       }
 
       setFormData({
@@ -129,11 +151,15 @@ export default function CouponsPage() {
 
     setError(null);
     try {
-      const { error: err } = await supabase
-        .from("coupons")
-        .delete()
-        .eq("id", id);
-      if (err) throw err;
+      const res = await fetch(`/api/admin/coupons/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          "x-admin-password": adminPass,
+        },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to delete coupon");
       await fetchCoupons();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to delete coupon");
@@ -155,7 +181,7 @@ export default function CouponsPage() {
     setShowForm(true);
   };
 
-  if (!user) return null;
+  if (!adminPass) return null;
 
   return (
     <div className="min-h-screen bg-background">
