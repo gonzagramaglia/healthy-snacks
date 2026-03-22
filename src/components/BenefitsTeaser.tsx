@@ -29,8 +29,8 @@ export function BenefitsTeaser({ lang }: { lang: Language }) {
                 : "Enter and unlock your benefit ✨"}
             </p>
           </div>
-          <div className="shrink-0 rounded-full bg-primary text-primary-foreground p-3 md:p-4 shadow-lg shadow-primary/30 group-hover:scale-110 transition-transform duration-300">
-            <ArrowRight className="w-7 h-7 md:w-8 md:h-8" />
+          <div className="bg-primary text-primary-foreground p-3.5 rounded-2xl hover:scale-105 active:scale-95 transition-all duration-300 shadow-xl shadow-primary/20 cursor-pointer">
+            <ArrowRight className="w-6 h-6 stroke-[2.5px]" />
           </div>
         </div>
       </button>

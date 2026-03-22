@@ -168,9 +168,9 @@ export const dictionary = {
       "¡Sí, claro! Por defecto vienen equilibrados, pero en el armador de Mixes (más arriba en esta página) podés elegir la proporción de cada ingrediente (máximo 66g por ingrediente). ¡Vos decidís!",
 
     // Trust / Footer Slogan
-    trust_slogan: "Energía que te acompaña en cada paso",
+    trust_slogan: "Energía que\nte acompaña en cada paso",
     trust_sub:
-      "Snacks ricos y prácticos para rendir en la facu, el trabajo, ¡o donde pinten las pilas!",
+      "Snacks ricos y prácticos para rendir en la facu, el trabajo,\n¡o donde pinten las pilas!",
   },
   en: {
     // Header & Footer
@@ -286,8 +286,7 @@ export const dictionary = {
 
     // Customer coupon
     coupon_title: "Your loyalty coupon",
-    coupon_subtitle:
-      "Fill all 10 slots and get 1 free Mix on your next order.",
+    coupon_subtitle: "Fill all 10 slots and get 1 free Mix on your next order.",
     coupon_last_updated: "Last updated: {date}",
     coupon_not_user: "Not {name}?",
     coupon_not_user_action: "Find your coupon here",
@@ -336,8 +335,8 @@ export const dictionary = {
       "Of course! By default, Mixes are balanced, but you can customize them in the 'Build your Mix' section above. You can adjust the amount of each ingredient (up to 66g). You're in control!",
 
     // Trust / Footer Slogan
-    trust_slogan: "Energy that accompanies you at every step",
+    trust_slogan: "Energy that\naccompanies you at every step",
     trust_sub:
-      "Tasty and practical snacks to perform at university, work, or wherever you want!",
+      "Tasty and practical snacks to perform at university, work,\nor wherever you want!",
   },
 };

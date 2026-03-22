@@ -3,10 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Language } from "@/lib/dictionary";
-import { User, ArrowRight, Mail } from "lucide-react";
+import { User, ArrowRight, Mail, UserCircle } from "lucide-react";
 
 export function CustomerSearch({ lang }: { lang: Language }) {
-  const sampleProgress = 7;
   const [showSurpriseInfo, setShowSurpriseInfo] = useState(false);
   const surpriseInfoTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [username, setUsername] = useState("");
@@ -56,7 +55,6 @@ export function CustomerSearch({ lang }: { lang: Language }) {
       !registerEmail.trim()
     )
       return;
-
     const subject = encodeURIComponent(
       `Reserva de usuario: ${registerUsername.trim().toLowerCase()}`,
     );
@@ -103,9 +101,9 @@ export function CustomerSearch({ lang }: { lang: Language }) {
             )}
           </p>
 
-          <div className="text-xs text-foreground/80 max-w-xl bg-background/60 border border-primary/15 rounded-xl px-3 py-3 space-y-3">
+          <div className="text-xs text-foreground/80 max-w-xl bg-background/60 border border-primary/15 rounded-xl px-3 py-3">
             {lang === "es" ? (
-              <div>
+              <>
                 <p className="text-center md:text-left">
                   <strong>
                     🎟️ Cada compra de 1, 2, 3 o 4 Mixes suma pasos
@@ -115,8 +113,8 @@ export function CustomerSearch({ lang }: { lang: Language }) {
                     gratuito!
                   </span>
                   <span className="hidden md:inline">
-                    ¡Al llegar a la meta, vas a poder canjear tu cupón por 1 Mix
-                    gratuito y otro regalo sorpresa!
+                    ¡Al llegar a la meta (10), vas a poder canjear tu cupón por
+                    1 Mix gratuito y otra sorpresa! 🎁
                   </span>
                   <span className="relative hidden md:inline-flex align-middle ml-1 group/info select-none cursor-default">
                     <span
@@ -133,37 +131,45 @@ export function CustomerSearch({ lang }: { lang: Language }) {
                     </span>
                   </span>
                 </p>
-                <p className="text-[11px] text-muted-foreground font-bold mt-2 mb-2 text-center md:text-left">
-                  Ejemplo de progreso (7/10):
-                </p>
-                <div className="grid grid-cols-10 gap-1.5">
-                  {Array.from({ length: 10 }).map((_, i) => (
-                    <div
-                      key={i}
-                      className={`h-6 rounded-md border text-[10px] flex items-center justify-center font-bold ${
-                        i < sampleProgress
-                          ? "bg-primary border-primary text-primary-foreground"
-                          : "border-dashed border-muted-foreground/30 text-muted-foreground/50 bg-muted/40"
-                      }`}
-                    >
-                      {i === 9 ? "🎁" : i + 1}
+                {showRegister && (
+                  <div className="hidden md:block">
+                    <div className="bg-background/60 border border-primary/15 rounded-xl px-3 py-3 mt-4">
+                      <p className="text-[11px] text-muted-foreground font-bold mb-2 text-center md:text-left">
+                        {lang === "es"
+                          ? "Ejemplo de progreso (7/10):"
+                          : "Progress example (7/10):"}
+                      </p>
+                      <div className="grid grid-cols-10 gap-1.5">
+                        {Array.from({ length: 10 }).map((_, i) => (
+                          <div
+                            key={i}
+                            className={`h-6 rounded-md border text-[10px] flex items-center justify-center font-bold ${
+                              i < 7
+                                ? "bg-primary border-primary text-primary-foreground"
+                                : "border-dashed border-muted-foreground/30 text-muted-foreground/50 bg-muted/40"
+                            }`}
+                          >
+                            {i === 9 ? "🎁" : i + 1}
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  ))}
-                </div>
-              </div>
+                  </div>
+                )}
+              </>
             ) : (
-              <div>
+              <>
                 <p className="text-center md:text-left">
                   <strong>
-                    🎟️ Every purchase of 1, 2, 3, or 4 Mixes adds steps
+                    🎟️ Every purchase of 1, 2, 3, or 4 mixes adds steps
                   </strong>
                   <span className="md:hidden">
                     . Once you hit the goal, you can redeem your coupon for 1
                     free Mix!
                   </span>
                   <span className="hidden md:inline">
-                    . Once you hit the goal, you can redeem your coupon for 1
-                    free Mix and an extra surprise gift!
+                    . Once you hit the goal (10), you can redeem your coupon for
+                    1 free Mix and an extra surprise! 🎁
                   </span>
                   <span className="relative hidden md:inline-flex align-middle ml-1 group/info select-none cursor-default">
                     <span
@@ -180,24 +186,28 @@ export function CustomerSearch({ lang }: { lang: Language }) {
                     </span>
                   </span>
                 </p>
-                <p className="text-[11px] text-muted-foreground font-bold mt-2 mb-2 text-center md:text-left">
-                  Progress example (7/10):
-                </p>
-                <div className="grid grid-cols-10 gap-1.5">
-                  {Array.from({ length: 10 }).map((_, i) => (
-                    <div
-                      key={i}
-                      className={`h-6 rounded-md border text-[10px] flex items-center justify-center font-bold ${
-                        i < sampleProgress
-                          ? "bg-primary border-primary text-primary-foreground"
-                          : "border-dashed border-muted-foreground/30 text-muted-foreground/50 bg-muted/40"
-                      }`}
-                    >
-                      {i === 9 ? "🎁" : i + 1}
+                {showRegister && (
+                  <>
+                    <p className="text-[11px] text-muted-foreground font-bold mt-2 mb-2 text-center md:text-left">
+                      Progress example (7/10):
+                    </p>
+                    <div className="grid grid-cols-10 gap-1.5">
+                      {Array.from({ length: 10 }).map((_, i) => (
+                        <div
+                          key={i}
+                          className={`h-6 rounded-md border text-[10px] flex items-center justify-center font-bold ${
+                            i < 7
+                              ? "bg-primary border-primary text-primary-foreground"
+                              : "border-dashed border-muted-foreground/30 text-muted-foreground/50 bg-muted/40"
+                          }`}
+                        >
+                          {i === 9 ? "🎁" : i + 1}
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              </div>
+                  </>
+                )}
+              </>
             )}
           </div>
         </div>
@@ -205,7 +215,7 @@ export function CustomerSearch({ lang }: { lang: Language }) {
         {!showRegister ? (
           <form
             onSubmit={handleSubmit}
-            className="relative z-10 w-full lg:w-[360px] space-y-3 self-center lg:self-center"
+            className="relative z-10 w-full lg:w-[360px] space-y-3 mt-1"
           >
             <div className="flex items-center gap-3">
               <div className="relative flex-1">
@@ -238,7 +248,7 @@ export function CustomerSearch({ lang }: { lang: Language }) {
                 router.push(`${prefix}?register=1`);
                 setShowRegister(true);
               }}
-              className="text-xs text-primary hover:underline cursor-pointer w-full text-center md:text-left"
+              className="text-xs text-primary hover:underline cursor-pointer w-full text-center md:text-left md:ml-4"
             >
               {lang === "es"
                 ? "¿Todavía no tenés usuario? Crealo ahora"
@@ -251,15 +261,35 @@ export function CustomerSearch({ lang }: { lang: Language }) {
             className="relative z-10 w-full lg:w-[360px] space-y-3 self-center lg:self-center"
           >
             <div className="relative">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                <UserCircle
+                  className="w-5 h-5 text-muted-foreground/50 transition-colors"
+                  id="register-name-icon"
+                />
+              </div>
               <input
                 type="text"
                 value={registerName}
                 onChange={(e) => setRegisterName(e.target.value)}
                 placeholder={lang === "es" ? "Nombre" : "Name"}
-                className="w-full px-4 py-3 rounded-2xl bg-card border-2 border-primary/10 focus:border-primary/50 focus:outline-none transition-all duration-300 shadow-inner"
+                className="w-full pl-12 pr-4 py-3 rounded-2xl bg-card border-2 border-primary/10 focus:border-primary/50 focus:outline-none transition-all duration-300 shadow-inner"
+                onFocus={() => {
+                  const icon = document.getElementById("register-name-icon");
+                  if (icon) icon.classList.add("text-primary");
+                }}
+                onBlur={() => {
+                  const icon = document.getElementById("register-name-icon");
+                  if (icon) icon.classList.remove("text-primary");
+                }}
               />
             </div>
             <div className="relative">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                <User
+                  className="w-5 h-5 text-muted-foreground/50 transition-colors"
+                  id="register-username-icon"
+                />
+              </div>
               <input
                 type="text"
                 value={registerUsername}
@@ -267,19 +297,42 @@ export function CustomerSearch({ lang }: { lang: Language }) {
                 placeholder={
                   lang === "es" ? "Usuario a reservar" : "Username to reserve"
                 }
-                className="w-full px-4 py-3 rounded-2xl bg-card border-2 border-primary/10 focus:border-primary/50 focus:outline-none transition-all duration-300 shadow-inner"
+                className="w-full pl-12 pr-4 py-3 rounded-2xl bg-card border-2 border-primary/10 focus:border-primary/50 focus:outline-none transition-all duration-300 shadow-inner"
+                onFocus={() => {
+                  const icon = document.getElementById(
+                    "register-username-icon",
+                  );
+                  if (icon) icon.classList.add("text-primary");
+                }}
+                onBlur={() => {
+                  const icon = document.getElementById(
+                    "register-username-icon",
+                  );
+                  if (icon) icon.classList.remove("text-primary");
+                }}
               />
             </div>
             <div className="relative">
-              <div className="absolute left-4 top-1/2 -translate-y-1/2">
-                <Mail className="w-4 h-4 text-muted-foreground/50" />
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                <Mail
+                  className="w-4 h-4 text-muted-foreground/50 transition-colors"
+                  id="register-email-icon"
+                />
               </div>
               <input
                 type="email"
                 value={registerEmail}
                 onChange={(e) => setRegisterEmail(e.target.value)}
                 placeholder={lang === "es" ? "Mail" : "Email"}
-                className="w-full pl-10 pr-4 py-3 rounded-2xl bg-card border-2 border-primary/10 focus:border-primary/50 focus:outline-none transition-all duration-300 shadow-inner"
+                className="w-full pl-12 pr-4 py-3 rounded-2xl bg-card border-2 border-primary/10 focus:border-primary/50 focus:outline-none transition-all duration-300 shadow-inner"
+                onFocus={() => {
+                  const icon = document.getElementById("register-email-icon");
+                  if (icon) icon.classList.add("text-primary");
+                }}
+                onBlur={() => {
+                  const icon = document.getElementById("register-email-icon");
+                  if (icon) icon.classList.remove("text-primary");
+                }}
               />
             </div>
 
