@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Language } from "@/lib/dictionary";
 import { User, ArrowRight, Mail, UserCircle } from "lucide-react";
+import { toast } from "sonner";
 
 export function CustomerSearch({ lang }: { lang: Language }) {
   const [showSurpriseInfo, setShowSurpriseInfo] = useState(false);
@@ -47,7 +48,9 @@ export function CustomerSearch({ lang }: { lang: Language }) {
     }
   };
 
-  const handleRegisterSubmit = (e: React.FormEvent) => {
+  const [isReserving, setIsReserving] = useState(false);
+
+  const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (
       !registerName.trim() ||
@@ -55,13 +58,39 @@ export function CustomerSearch({ lang }: { lang: Language }) {
       !registerEmail.trim()
     )
       return;
-    const subject = encodeURIComponent(
-      `Reserva de usuario: ${registerUsername.trim().toLowerCase()}`,
-    );
-    const body = encodeURIComponent(
-      `Nombre: ${registerName.trim()}\nUsuario a reservar: ${registerUsername.trim().toLowerCase()}\nEmail: ${registerEmail.trim()}`,
-    );
-    window.location.href = `mailto:gonza@moovimiento.com?subject=${subject}&body=${body}`;
+    
+    setIsReserving(true);
+    try {
+      const response = await fetch("/api/reserve-user", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: registerName,
+          username: registerUsername,
+          email: registerEmail,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast.error(data.error || "Ocurrió un error inesperado.");
+      } else {
+        toast.success(
+          lang === "es"
+            ? "¡Revisá tu correo para confirmar!"
+            : "Check your email to confirm!"
+        );
+        setShowRegister(false);
+        setRegisterName("");
+        setRegisterUsername("");
+        setRegisterEmail("");
+      }
+    } catch (err) {
+      toast.error("Error al conectar con el servidor.");
+    } finally {
+      setIsReserving(false);
+    }
   };
 
   return (
@@ -339,9 +368,16 @@ export function CustomerSearch({ lang }: { lang: Language }) {
             <div className="flex flex-col md:flex-row items-center justify-center gap-2">
               <button
                 type="submit"
-                className="bg-primary text-primary-foreground px-4 py-2.5 rounded-xl hover:scale-[1.02] active:scale-95 transition-all duration-300 cursor-pointer"
+                disabled={!registerName.trim() || !registerUsername.trim() || !registerEmail.trim() || isReserving}
+                className={`px-4 py-2.5 rounded-xl transition-all duration-300 ${
+                  (!registerName.trim() || !registerUsername.trim() || !registerEmail.trim() || isReserving)
+                    ? "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
+                    : "bg-primary text-primary-foreground hover:scale-[1.02] active:scale-95 cursor-pointer"
+                }`}
               >
-                {lang === "es" ? "Reservar usuario" : "Reserve username"}
+                {isReserving 
+                  ? (lang === "es" ? "Enviando..." : "Sending...") 
+                  : (lang === "es" ? "Reservar usuario" : "Reserve username")}
               </button>
               <button
                 type="button"
