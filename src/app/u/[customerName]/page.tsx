@@ -1,7 +1,9 @@
 import { MainContent } from "@/components/MainContent";
 import { hardcodedCustomers } from "@/lib/customers";
 import { Metadata } from "next";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({
   params,
@@ -18,13 +20,13 @@ export async function generateMetadata({
     name = hardcodedCustomers[targetId].customerName;
   } else {
     try {
-      const supabase = await createClient();
+      const supabase = createAdminClient();
       const { data } = await supabase
         .from("customers")
         .select("name")
         .eq("username", targetId)
         .eq("is_verified", true)
-        .single();
+        .maybeSingle();
       if (data?.name) {
         name = data.name;
       }
@@ -52,12 +54,12 @@ export default async function CustomerPage({
   // If not found in hardcoded, look in Supabase database
   if (!customer) {
     try {
-      const supabase = await createClient();
+      const supabase = createAdminClient();
       const { data } = await supabase
         .from("customers")
         .select("id, name, is_verified, purchases_count, last_updated")
         .eq("username", targetId)
-        .single();
+        .maybeSingle();
         
       if (data && data.is_verified) {
         customer = {
