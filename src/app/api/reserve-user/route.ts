@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { buildGenericEmailHtml } from "@/lib/emailTemplates";
 
 export async function POST(request: NextRequest) {
@@ -17,15 +17,23 @@ export async function POST(request: NextRequest) {
     const cleanUsername = username.trim().toLowerCase();
     const cleanEmail = email.trim().toLowerCase();
 
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
     // Check if user already exists
 
-    const { data: existingUser } = await supabase
+    const { data: existingUser, error: queryError } = await supabase
       .from("customers")
       .select("id, is_verified")
       .or(`username.eq.${cleanUsername},email.eq.${cleanEmail}`)
-      .single();
+      .maybeSingle();
+
+    if (queryError) {
+      console.error("Supabase query error:", queryError);
+      return NextResponse.json(
+        { error: "El usuario y/o email ya están en uso por separado." },
+        { status: 400 }
+      );
+    }
 
     if (existingUser && existingUser.is_verified) {
       return NextResponse.json(
@@ -34,7 +42,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const verificationToken = crypto.randomUUID();
+    const { randomUUID } = await import("node:crypto");
+    const verificationToken = randomUUID();
 
     if (existingUser && !existingUser.is_verified) {
       // Update existing unverified record
@@ -51,7 +60,7 @@ export async function POST(request: NextRequest) {
 
       if (updateError) {
         console.error("Error updating customer:", updateError);
-        return NextResponse.json({ error: "Error al registrar el usuario." }, { status: 500 });
+        return NextResponse.json({ error: "DB Error (update): " + updateError.message }, { status: 500 });
       }
     } else {
       // Insert new record
@@ -68,7 +77,7 @@ export async function POST(request: NextRequest) {
 
       if (insertError) {
         console.error("Error inserting customer:", insertError);
-        return NextResponse.json({ error: "Error al registrar el usuario." }, { status: 500 });
+        return NextResponse.json({ error: "DB Error (insert): " + insertError.message }, { status: 500 });
       }
     }
 
