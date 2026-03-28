@@ -58,7 +58,7 @@ export function CustomerSearch({ lang }: { lang: Language }) {
       !registerEmail.trim()
     )
       return;
-    
+
     setIsReserving(true);
     try {
       const response = await fetch("/api/reserve-user", {
@@ -79,14 +79,14 @@ export function CustomerSearch({ lang }: { lang: Language }) {
         toast.success(
           lang === "es"
             ? "¡Revisá tu correo para confirmar!"
-            : "Check your email to confirm!"
+            : "Check your email to confirm!",
         );
         setShowRegister(false);
         setRegisterName("");
         setRegisterUsername("");
         setRegisterEmail("");
       }
-    } catch (err) {
+    } catch {
       toast.error("Error al conectar con el servidor.");
     } finally {
       setIsReserving(false);
@@ -368,16 +368,28 @@ export function CustomerSearch({ lang }: { lang: Language }) {
             <div className="flex flex-col md:flex-row items-center justify-center gap-2">
               <button
                 type="submit"
-                disabled={!registerName.trim() || !registerUsername.trim() || !registerEmail.trim() || isReserving}
+                disabled={
+                  !registerName.trim() ||
+                  !registerUsername.trim() ||
+                  !registerEmail.trim() ||
+                  isReserving
+                }
                 className={`px-4 py-2.5 rounded-xl transition-all duration-300 ${
-                  (!registerName.trim() || !registerUsername.trim() || !registerEmail.trim() || isReserving)
+                  !registerName.trim() ||
+                  !registerUsername.trim() ||
+                  !registerEmail.trim() ||
+                  isReserving
                     ? "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
                     : "bg-primary text-primary-foreground hover:scale-[1.02] active:scale-95 cursor-pointer"
                 }`}
               >
-                {isReserving 
-                  ? (lang === "es" ? "Enviando..." : "Sending...") 
-                  : (lang === "es" ? "Reservar usuario" : "Reserve username")}
+                {isReserving
+                  ? lang === "es"
+                    ? "Enviando..."
+                    : "Sending..."
+                  : lang === "es"
+                    ? "Reservar usuario"
+                    : "Reserve username"}
               </button>
               <button
                 type="button"

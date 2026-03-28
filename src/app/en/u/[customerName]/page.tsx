@@ -3,7 +3,7 @@ import { hardcodedCustomers } from "@/lib/customers";
 import { Metadata } from "next";
 import { createAdminClient } from "@/lib/supabase/admin";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
@@ -12,9 +12,9 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { customerName } = await params;
   const targetId = customerName.toLowerCase();
-  
+
   let name = targetId.charAt(0).toUpperCase() + targetId.slice(1);
-  
+
   // First check hardcoded, then DB
   if (hardcodedCustomers[targetId]) {
     name = hardcodedCustomers[targetId].customerName;
@@ -30,7 +30,7 @@ export async function generateMetadata({
       if (data?.name) {
         name = data.name;
       }
-    } catch (err) {
+    } catch {
       // Ignore
     }
   }
@@ -48,7 +48,7 @@ export default async function CustomerPageEn({
 }) {
   const { customerName } = await params;
   const targetId = customerName.toLowerCase();
-  
+
   let customer = hardcodedCustomers[targetId];
 
   // If not found in hardcoded, look in Supabase database
@@ -60,7 +60,7 @@ export default async function CustomerPageEn({
         .select("id, name, is_verified, purchases_count, last_updated")
         .eq("username", targetId)
         .maybeSingle();
-        
+
       if (data && data.is_verified) {
         customer = {
           id: data.id,
@@ -70,7 +70,7 @@ export default async function CustomerPageEn({
           isVerified: data.is_verified,
         };
       }
-    } catch (err) {
+    } catch {
       // Ignore
     }
   }

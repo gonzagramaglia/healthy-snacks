@@ -18,7 +18,14 @@ export async function PATCH(
     const body = await request.json();
     const { name, username, purchases_count, is_verified } = body;
 
-    const updateData: any = {};
+    type UpdateCustomer = {
+      name?: string;
+      username?: string;
+      purchases_count?: number;
+      is_verified?: boolean;
+      last_updated?: string;
+    };
+    const updateData: UpdateCustomer = {};
     if (name !== undefined) updateData.name = name;
     if (username !== undefined) updateData.username = username.toLowerCase();
     if (purchases_count !== undefined)
