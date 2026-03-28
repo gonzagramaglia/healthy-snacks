@@ -9,12 +9,12 @@ export default function AdminLayout({
 }) {
   return (
     <div className="min-h-screen relative overflow-x-hidden transition-colors">
-      {/* Background Wallpaper */}
-      <div 
-        className="fixed inset-0 z-[-1] opacity-40 dark:opacity-20 pointer-events-none bg-cover bg-center bg-no-repeat"
+      {/* Background Wallpaper - Lower Opacity as requested */}
+      <div
+        className="fixed inset-0 z-[-1] opacity-10 dark:opacity-5 pointer-events-none bg-cover bg-center bg-no-repeat grayscale-[20%] brightness-110"
         style={{ backgroundImage: 'url("/wallpaper.png")' }}
       />
-      
+
       {/* Content wrapper */}
       <div className="relative z-0">
         {children}

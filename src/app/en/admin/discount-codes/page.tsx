@@ -3,5 +3,5 @@
 import { DiscountCodes } from "@/components/admin/DiscountCodes";
 
 export default function Page() {
-  return <DiscountCodes lang="es" />;
+  return <DiscountCodes lang="en" />;
 }
