@@ -38,7 +38,7 @@ export function CustomerEditForm({
   const currentCount = formData.purchasesCount || 0;
 
   return (
-    <div className="relative pt-6">
+    <div className="relative pt-2 md:pt-6">
       <form onSubmit={onSave} className="space-y-6 md:space-y-10">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
           <div className="space-y-2 md:space-y-3">
@@ -85,33 +85,33 @@ export function CustomerEditForm({
         {/* Integrated Progress & Stats Section */}
         <div className="flex flex-col gap-5 py-6 px-5 md:px-8 rounded-2xl md:rounded-[2.5rem] bg-white dark:bg-black border-2 border-primary/10 shadow-xl shadow-primary/5">
            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-6">
+              <div className="flex items-center gap-4 md:gap-6">
                  <div className="relative">
                     <div className="text-5xl md:text-7xl font-black text-primary tracking-tighter leading-none">
                       {currentCount}
                     </div>
                  </div>
                  <div className="space-y-1">
-                    <p className="text-xs md:text-sm font-black uppercase tracking-widest text-foreground">Compras Registradas</p>
-                    <p className="text-[10px] md:text-xs font-bold text-muted-foreground uppercase opacity-70">
-                      Progreso: <span className="text-primary font-black">{currentCount * 10}%</span> del cupón
+                    <p className="text-[10px] md:text-sm font-black uppercase tracking-widest text-foreground leading-tight">Compras Registradas</p>
+                    <p className="text-[9px] md:text-xs font-bold text-muted-foreground uppercase opacity-70">
+                      Progreso: <span className="text-primary font-black">{currentCount * 10}%</span>
                     </p>
                  </div>
               </div>
               
               <div className="flex flex-col items-end gap-2">
                  {formData.isVerified ? (
-                    <div className="flex items-center gap-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-3 py-1.5 rounded-full border border-blue-100 dark:border-blue-800 shadow-sm transition-all hover:scale-105">
+                    <div className="flex items-center justify-center md:gap-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 w-8 h-8 md:w-auto md:px-3 md:py-1.5 rounded-full border border-blue-100 dark:border-blue-800 shadow-sm transition-all hover:scale-105">
                       <ShieldCheck className="w-4 h-4" />
-                      <span className="text-[10px] font-black uppercase tracking-widest">Verificado</span>
+                      <span className="hidden md:inline text-[10px] font-black uppercase tracking-widest">Verificado</span>
                     </div>
                  ) : (
-                    <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 px-3 py-1.5">No Verificado</div>
+                    <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/30 px-2 py-1.5">Unverified</div>
                  )}
               </div>
            </div>
 
-           <div className="relative w-full h-4 bg-muted/20 rounded-full overflow-hidden border border-primary/5 shadow-inner">
+           <div className="relative w-full h-3 md:h-4 bg-muted/20 rounded-full overflow-hidden border border-primary/5 shadow-inner">
              <div 
                 className={`h-full rounded-full transition-all duration-1000 ease-out shadow-lg ${
                   currentCount >= 10 
@@ -127,8 +127,8 @@ export function CustomerEditForm({
         <div className="space-y-4 md:space-y-6">
           <div className="flex items-center justify-between gap-3">
              <div className="w-1.5 h-6 bg-primary rounded-full" />
-             <Label className="text-lg font-black uppercase tracking-tight text-foreground">
-               Registro de Slots
+             <Label className="text-base md:text-lg font-black uppercase tracking-tight text-foreground">
+               Historial de Slots
              </Label>
              <div className="h-[2px] flex-1 bg-primary/5 rounded-full" />
           </div>
@@ -202,7 +202,8 @@ export function CustomerEditForm({
             type="submit" 
             className="flex-1 md:flex-none rounded-xl md:rounded-2xl px-6 md:px-14 h-12 md:h-14 shadow-lg shadow-primary/20 font-black text-base md:text-lg transition-all active:scale-95"
           >
-            Guardar Cambios
+            <span className="hidden md:inline">Guardar Cambios</span>
+            <span className="md:hidden">Guardar</span>
           </Button>
           <Button 
             type="button" 

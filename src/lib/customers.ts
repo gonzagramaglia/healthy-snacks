@@ -9,24 +9,29 @@ export interface CustomerPurchase {
   purchaseDates?: string[];
 }
 
+interface RawCustomerData {
+  id: string;
+  name: string;
+  email?: string;
+  username: string;
+  purchases_count: number;
+  last_updated: string;
+  is_verified?: boolean;
+  purchase_dates?: string[];
+}
+
 export async function fetchCustomers(adminPassword: string, query = ""): Promise<CustomerPurchase[]> {
   const res = await fetch(`/api/admin/customers?q=${query}`, {
     headers: {
       "x-admin-password": adminPassword,
     },
   });
-  if (!res.ok) throw new Error("Failed to fetch customers");
+  if (!res.ok) {
+    const errData = await res.json().catch(() => ({}));
+    throw new Error(errData.details || "Failed to fetch customers");
+  }
   const data = await res.json();
-  return (data.customers || []).map((c: { 
-    id: string; 
-    name: string; 
-    email?: string;
-    username: string; 
-    purchases_count: number; 
-    last_updated: string; 
-    is_verified: boolean; 
-    purchase_dates: string[]; 
-  }) => ({
+  return (data.customers || []).map((c: RawCustomerData) => ({
     id: c.id,
     name: c.name,
     email: c.email,
@@ -54,9 +59,14 @@ export async function updateCustomer(adminPassword: string, id: string, customer
       purchase_dates: customer.purchaseDates,
     }),
   });
-  if (!res.ok) throw new Error("Failed to update customer");
+  
+  if (!res.ok) {
+    const errData = await res.json().catch(() => ({}));
+    throw new Error(errData.details || errData.error || "Failed to update customer");
+  }
+  
   const data = await res.json();
-  const c = data.customer;
+  const c: RawCustomerData = data.customer;
   return {
     id: c.id,
     name: c.name,
