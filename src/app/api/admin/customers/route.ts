@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
           name,
           email,
           username: username.toLowerCase(),
-          purchases_count: purchases_count || 0,
+          purchases_count: parseInt(purchases_count) || 0,
           is_verified: is_verified !== undefined ? is_verified : true,
           purchase_dates: purchase_dates || [],
           last_updated: new Date().toISOString(),
@@ -70,21 +70,26 @@ export async function POST(request: NextRequest) {
 
     if (error) throw error;
 
-    if (purchases_count > 0) {
-      await supabase.from("customer_loyalty_purchases").insert(
-        Array.from({ length: purchases_count }).map((_, i) => ({
-          customer_id: data.id,
-          purchase_date: new Date().toISOString(),
-          card_number: Math.floor(i / 10) + 1,
-        }))
-      );
+    const finalCount = parseInt(purchases_count) || 0;
+    if (finalCount > 0 && data?.id) {
+       try {
+          await supabase.from("customer_loyalty_purchases").insert(
+            Array.from({ length: finalCount }).map((_, i) => ({
+              customer_id: data.id,
+              purchase_date: new Date().toISOString(),
+              card_number: Math.floor(i / 10) + 1,
+            }))
+          );
+       } catch (historyErr) {
+          console.error("Non-blocking history error on POST:", historyErr);
+       }
     }
 
     return NextResponse.json({ customer: data });
   } catch (err) {
     console.error("Error creating customer:", err);
     return NextResponse.json(
-      { error: "Error creating customer" },
+      { error: "Error creating customer", details: err instanceof Error ? err.message : String(err) },
       { status: 500 },
     );
   }

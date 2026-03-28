@@ -34,7 +34,7 @@ export async function PATCH(
     if (email !== undefined) updateData.email = email;
     if (username !== undefined) updateData.username = username.toLowerCase();
     if (purchases_count !== undefined)
-      updateData.purchases_count = Math.min(10, Math.max(0, parseInt(purchases_count)));
+      updateData.purchases_count = Math.min(10, Math.max(0, parseInt(purchases_count) || 0));
     if (is_verified !== undefined) updateData.is_verified = is_verified;
     if (purchase_dates !== undefined) updateData.purchase_dates = purchase_dates;
     updateData.last_updated = new Date().toISOString();

@@ -146,7 +146,7 @@ export default function CustomerBenefitsPage() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div className="space-y-1">
             <h1 className="text-4xl font-extrabold tracking-tight text-foreground bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
-              Gestión de Beneficios
+              Fidelización y Beneficios
             </h1>
             <p className="text-muted-foreground text-lg">
               Administrá los cupones y la lealtad de tus clientes.
