@@ -38,17 +38,7 @@ export function CustomerEditForm({
   const currentCount = formData.purchasesCount || 0;
 
   return (
-    <div className="relative">
-      {/* Read-only Verification Badge - Top Right */}
-      {formData.isVerified && (
-        <div className="absolute top-0 right-0 p-1 md:p-3 z-20">
-          <div className="flex items-center gap-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-3 py-1.5 rounded-full border border-blue-100 dark:border-blue-800 shadow-sm animate-in fade-in zoom-in duration-300">
-            <ShieldCheck className="w-4 h-4" />
-            <span className="text-[10px] font-black uppercase tracking-widest">Verificado</span>
-          </div>
-        </div>
-      )}
-
+    <div className="relative pt-6">
       <form onSubmit={onSave} className="space-y-6 md:space-y-10">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
           <div className="space-y-2 md:space-y-3">
@@ -93,11 +83,13 @@ export function CustomerEditForm({
         </div>
 
         {/* Integrated Progress & Stats Section */}
-        <div className="flex flex-col gap-4 py-6 px-4 md:px-8 rounded-2xl md:rounded-[2.5rem] bg-white dark:bg-black border-2 border-primary/10 shadow-xl shadow-primary/5">
+        <div className="flex flex-col gap-5 py-6 px-5 md:px-8 rounded-2xl md:rounded-[2.5rem] bg-white dark:bg-black border-2 border-primary/10 shadow-xl shadow-primary/5">
            <div className="flex items-center justify-between">
               <div className="flex items-center gap-6">
-                 <div className="text-5xl md:text-6xl font-black text-primary tracking-tighter">
-                   {currentCount}
+                 <div className="relative">
+                    <div className="text-5xl md:text-7xl font-black text-primary tracking-tighter leading-none">
+                      {currentCount}
+                    </div>
                  </div>
                  <div className="space-y-1">
                     <p className="text-xs md:text-sm font-black uppercase tracking-widest text-foreground">Compras Registradas</p>
@@ -107,12 +99,19 @@ export function CustomerEditForm({
                  </div>
               </div>
               
-              <div className="hidden md:block">
-                 <ShieldCheck className={`w-12 h-12 transition-all duration-700 ${currentCount >= 10 ? "text-green-500 scale-110" : "text-primary/10"}`} />
+              <div className="flex flex-col items-end gap-2">
+                 {formData.isVerified ? (
+                    <div className="flex items-center gap-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-3 py-1.5 rounded-full border border-blue-100 dark:border-blue-800 shadow-sm transition-all hover:scale-105">
+                      <ShieldCheck className="w-4 h-4" />
+                      <span className="text-[10px] font-black uppercase tracking-widest">Verificado</span>
+                    </div>
+                 ) : (
+                    <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 px-3 py-1.5">No Verificado</div>
+                 )}
               </div>
            </div>
 
-           <div className="relative w-full h-4 bg-muted/30 rounded-full overflow-hidden border border-primary/5 shadow-inner p-0.5">
+           <div className="relative w-full h-4 bg-muted/20 rounded-full overflow-hidden border border-primary/5 shadow-inner">
              <div 
                 className={`h-full rounded-full transition-all duration-1000 ease-out shadow-lg ${
                   currentCount >= 10 
@@ -128,13 +127,13 @@ export function CustomerEditForm({
         <div className="space-y-4 md:space-y-6">
           <div className="flex items-center justify-between gap-3">
              <div className="w-1.5 h-6 bg-primary rounded-full" />
-             <Label className="text-base md:text-lg font-black uppercase tracking-tight text-foreground">
-               Historial de Slots
+             <Label className="text-lg font-black uppercase tracking-tight text-foreground">
+               Registro de Slots
              </Label>
              <div className="h-[2px] flex-1 bg-primary/5 rounded-full" />
           </div>
           
-          <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 md:gap-5">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 md:gap-5">
             {Array.from({ length: 10 }).map((_, i) => {
               const isUnlocked = i < currentCount;
               const isNext = i === currentCount;
@@ -163,7 +162,7 @@ export function CustomerEditForm({
                 >
                   <div className="flex justify-between items-center mb-2">
                     <span className={`text-[9px] font-black uppercase ${isUnlocked ? "text-primary/70" : "text-muted-foreground"}`}>
-                      S{i + 1}
+                      Slot {i + 1}
                     </span>
                     {isUnlocked ? (
                       <CalendarIcon className="w-3 h-3 text-primary" />
@@ -209,7 +208,7 @@ export function CustomerEditForm({
             type="button" 
             variant="outline" 
             onClick={onCancel}
-            className="flex-1 md:flex-none rounded-xl md:rounded-2xl px-6 md:px-10 h-12 md:h-14 border-2 font-black text-base md:text-lg hover:bg-red-50 hover:text-red-500 transition-all font-semibold"
+            className="flex-1 md:flex-none rounded-xl md:rounded-2xl px-6 md:px-10 h-12 md:h-14 border-2 font-black text-base md:text-lg hover:bg-red-50 hover:text-red-500 transition-all"
           >
             Cancelar
           </Button>
