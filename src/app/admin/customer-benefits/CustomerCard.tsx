@@ -28,6 +28,9 @@ export function CustomerCard({
             @{customer.username}
           </span>
         </div>
+        {customer.email && (
+          <p className="text-xs text-muted-foreground/60 mb-2">{customer.email}</p>
+        )}
         <p className="text-sm text-muted-foreground">
           Compras:{" "}
           <span className="font-bold text-primary">

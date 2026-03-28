@@ -50,6 +50,7 @@ create index if not exists discount_codes_active_idx on public.discount_codes (a
 create table if not exists public.customers (
   id uuid primary key default gen_random_uuid(),
   name text not null,
+  email text,
   username text not null unique,
   purchases_count integer not null default 0,
   purchase_dates text[] not null default '{}',

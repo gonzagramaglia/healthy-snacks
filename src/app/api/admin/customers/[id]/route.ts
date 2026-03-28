@@ -16,10 +16,11 @@ export async function PATCH(
 
     const { id } = await params;
     const body = await request.json();
-    const { name, username, purchases_count, is_verified, purchase_dates } = body;
+    const { name, email, username, purchases_count, is_verified, purchase_dates } = body;
 
     type UpdateCustomer = {
       name?: string;
+      email?: string;
       username?: string;
       purchases_count?: number;
       is_verified?: boolean;
@@ -28,6 +29,7 @@ export async function PATCH(
     };
     const updateData: UpdateCustomer = {};
     if (name !== undefined) updateData.name = name;
+    if (email !== undefined) updateData.email = email;
     if (username !== undefined) updateData.username = username.toLowerCase();
     if (purchases_count !== undefined)
       updateData.purchases_count = purchases_count;

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CustomerEditForm } from "./CustomerEditForm";
@@ -13,16 +13,23 @@ import {
   deleteCustomer 
 } from "@/lib/customers";
 import { toast } from "sonner";
-import { ArrowLeft, Plus } from "lucide-react";
+import { ArrowLeft, Plus, Users } from "lucide-react";
 
 export default function CustomerBenefitsPage() {
   const router = useRouter();
+  const formRef = useRef<HTMLDivElement>(null);
   const [adminPass, setAdminPass] = useState("");
   const [customers, setCustomers] = useState<CustomerPurchase[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState<Partial<CustomerPurchase>>({});
   const [isAdding, setIsAdding] = useState(false);
+
+  const scrollToForm = () => {
+    setTimeout(() => {
+      formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
+  };
 
   const loadCustomers = useCallback(async (pass: string) => {
     try {
@@ -54,8 +61,11 @@ export default function CustomerBenefitsPage() {
 
   const handleEditCustomer = (customer: CustomerPurchase) => {
     setEditingId(customer.id);
-    setFormData({ ...customer });
+    const initialDates = [...(customer.purchaseDates || [])];
+    while (initialDates.length < 10) initialDates.push("");
+    setFormData({ ...customer, purchaseDates: initialDates });
     setIsAdding(false);
+    scrollToForm();
   };
 
   const handleAddNew = () => {
@@ -65,9 +75,10 @@ export default function CustomerBenefitsPage() {
       username: "",
       purchasesCount: 0,
       isVerified: false,
-      purchaseDates: [],
+      purchaseDates: Array(10).fill(""),
     });
     setIsAdding(true);
+    scrollToForm();
   };
 
   const handleSaveCustomer = async (e: React.FormEvent) => {
@@ -75,8 +86,14 @@ export default function CustomerBenefitsPage() {
     if (!adminPass) return;
     
     try {
+      // Clean up empty dates at the end if we want
+      const cleanedDates = (formData.purchaseDates || [])
+        .map(d => d.trim());
+      
+      const payload = { ...formData, purchaseDates: cleanedDates };
+
       if (editingId) {
-        const updated = await updateCustomer(adminPass, editingId, formData);
+        const updated = await updateCustomer(adminPass, editingId, payload);
         setCustomers((prev) =>
           prev.map((c) => (c.id === editingId ? updated : c))
         );
@@ -90,11 +107,11 @@ export default function CustomerBenefitsPage() {
             "x-admin-password": adminPass,
           },
           body: JSON.stringify({
-            name: formData.name,
-            username: formData.username,
-            purchases_count: formData.purchasesCount,
-            is_verified: formData.isVerified,
-            purchase_dates: formData.purchaseDates,
+            name: payload.name,
+            username: payload.username,
+            purchases_count: payload.purchasesCount,
+            is_verified: payload.isVerified,
+            purchase_dates: payload.purchaseDates,
           }),
         });
         if (!res.ok) throw new Error("Error creating customer");
@@ -133,10 +150,10 @@ export default function CustomerBenefitsPage() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div className="space-y-1">
             <h1 className="text-4xl font-extrabold tracking-tight text-foreground bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
-              Clientes y Beneficios
+              Gestión de Beneficios
             </h1>
             <p className="text-muted-foreground text-lg">
-              Gestioná los puntos de lealtad y verificación de tus clientes.
+              Administrá los cupones y la lealtad de tus clientes.
             </p>
           </div>
           
@@ -144,14 +161,14 @@ export default function CustomerBenefitsPage() {
             <Button 
               variant="outline" 
               onClick={() => router.push("/admin")}
-              className="gap-2 rounded-xl border-2 hover:bg-muted"
+              className="gap-2 rounded-xl border-2 hover:bg-muted font-bold"
             >
               <ArrowLeft className="w-4 h-4" />
               Panel Admin
             </Button>
             <Button 
               onClick={handleAddNew}
-              className="gap-2 rounded-xl border-2 shadow-lg shadow-primary/10"
+              className="gap-2 rounded-xl border-2 shadow-lg shadow-primary/10 font-bold"
             >
               <Plus className="w-4 h-4" />
               Nuevo Cliente
@@ -159,54 +176,67 @@ export default function CustomerBenefitsPage() {
           </div>
         </div>
 
-        {/* Form for adding/editing */}
-        {(isAdding || editingId) && (
-          <Card className="border-2 border-primary/20 rounded-2xl shadow-xl bg-white dark:bg-black overflow-hidden animate-in fade-in slide-in-from-top-4 duration-300">
-            <CardContent className="p-6">
-              <h2 className="text-xl font-bold mb-4">
-                {editingId ? "Editar Cliente" : "Registrar Nuevo Cliente"}
-              </h2>
-              <CustomerEditForm
-                formData={formData}
-                setFormData={setFormData}
-                onCancel={() => {
-                  setEditingId(null);
-                  setIsAdding(false);
-                }}
-                onSave={handleSaveCustomer}
-              />
-            </CardContent>
-          </Card>
-        )}
-
         {/* Search & Stats Bar placeholder */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="bg-white/50 dark:bg-black/50 backdrop-blur-sm border-2 border-primary/5 rounded-2xl shadow-sm">
+          <Card className="bg-white/50 dark:bg-black/50 backdrop-blur-sm border-2 border-primary/5 rounded-2xl shadow-sm hover:border-primary/20 transition-all duration-300">
             <CardContent className="pt-6">
-              <div className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Total Clientes</div>
-              <div className="text-3xl font-bold mt-1">{loading ? "..." : customers.length}</div>
+              <div className="flex justify-between items-center mb-1">
+                <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Total Clientes</div>
+                <Users className="w-4 h-4 text-primary/40" />
+              </div>
+              <div className="text-4xl font-black mt-1">{loading ? "..." : customers.length}</div>
             </CardContent>
           </Card>
-          <Card className="bg-white/50 dark:bg-black/50 backdrop-blur-sm border-2 border-primary/5 rounded-2xl shadow-sm">
+          <Card className="bg-white/50 dark:bg-black/50 backdrop-blur-sm border-2 border-primary/5 rounded-2xl shadow-sm hover:border-primary/20 transition-all duration-300">
             <CardContent className="pt-6">
-              <div className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Verificados</div>
-              <div className="text-3xl font-bold mt-1">
+               <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">Verificados</div>
+              <div className="text-4xl font-black mt-1 text-blue-500">
                 {loading ? "..." : customers.filter(c => c.isVerified).length}
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-white/50 dark:bg-black/50 backdrop-blur-sm border-2 border-primary/5 rounded-2xl shadow-sm">
+          <Card className="bg-white/50 dark:bg-black/50 backdrop-blur-sm border-2 border-primary/5 rounded-2xl shadow-sm hover:border-primary/20 transition-all duration-300">
             <CardContent className="pt-6">
-              <div className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Última Actividad</div>
-              <div className="text-xl font-bold mt-2">
-                {loading ? "..." : "Hoy"}
+              <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">Completados (Full)</div>
+              <div className="text-4xl font-black mt-1 text-green-500">
+                {loading ? "..." : customers.filter(c => (c.purchasesCount || 0) >= 10).length}
               </div>
             </CardContent>
           </Card>
         </div>
 
+        {/* Form Container with scroll ref */}
+        <div ref={formRef}>
+          {(isAdding || editingId) && (
+            <Card className="border-2 border-primary/20 rounded-3xl shadow-2xl bg-white dark:bg-black overflow-hidden animate-in fade-in slide-in-from-top-4 duration-500">
+              <CardContent className="p-8">
+                <div className="flex justify-between items-center mb-6">
+                   <h2 className="text-2xl font-black text-foreground uppercase tracking-tight">
+                    {editingId ? "Editar Cliente" : "Registrar Nuevo Cliente"}
+                  </h2>
+                  <div className="h-1 flex-1 mx-4 bg-muted/30 rounded-full" />
+                </div>
+                <CustomerEditForm
+                  formData={formData}
+                  setFormData={setFormData}
+                  onCancel={() => {
+                    setEditingId(null);
+                    setIsAdding(false);
+                  }}
+                  onSave={handleSaveCustomer}
+                />
+              </CardContent>
+            </Card>
+          )}
+        </div>
+
         {/* Content Section */}
-        <div>
+        <div className="space-y-6">
+          <div className="flex items-center gap-2">
+             <div className="w-2 h-8 bg-primary rounded-full" />
+             <h2 className="text-2xl font-black text-foreground uppercase tracking-tight">Listado de Clientes</h2>
+          </div>
+          
           {loading ? (
             <div className="grid gap-6 md:grid-cols-2">
               {[1, 2, 3, 4].map((i) => (
@@ -231,13 +261,13 @@ export default function CustomerBenefitsPage() {
               ))}
             </div>
           ) : customers.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 border-2 border-dashed border-primary/10 rounded-3xl bg-white/30 dark:bg-black/30 backdrop-blur-sm">
-              <div className="w-20 h-20 bg-primary/5 rounded-full flex items-center justify-center mb-6">
-                <Plus className="w-10 h-10 text-primary/40" />
+            <div className="flex flex-col items-center justify-center py-24 border-2 border-dashed border-primary/10 rounded-[3rem] bg-white/30 dark:bg-black/30 backdrop-blur-sm">
+              <div className="w-24 h-24 bg-primary/5 rounded-full flex items-center justify-center mb-6">
+                <Plus className="w-12 h-12 text-primary/20" />
               </div>
-              <h3 className="text-2xl font-bold text-foreground mb-2">No se encontraron clientes</h3>
-              <p className="text-muted-foreground max-w-sm text-center">
-                Parece que todavía no hay clientes registrados. Aparecerán aquí cuando empiecen a interactuar con el sistema.
+              <h3 className="text-3xl font-black text-foreground mb-2">No hay clientes aún</h3>
+              <p className="text-muted-foreground max-w-sm text-center font-medium">
+                Empezá registrando tu primer cliente para gestionar sus beneficios.
               </p>
             </div>
           ) : (
@@ -245,26 +275,26 @@ export default function CustomerBenefitsPage() {
               {customers.map((customer) => (
                 <Card 
                   key={customer.id} 
-                  className="hover:border-primary/40 hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 border-2 border-primary/5 rounded-2xl group overflow-hidden bg-white dark:bg-black"
+                  className={`
+                    hover:border-primary/40 hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 border-2 rounded-3xl group overflow-hidden bg-white dark:bg-black
+                    ${editingId === customer.id ? "border-primary/30 ring-4 ring-primary/5" : "border-primary/5"}
+                  `}
                 >
                   <CardContent className="p-0">
-                    <div className="p-6">
-                    {editingId === customer.id ? (
-                      <div className="flex flex-col items-center justify-center py-10 opacity-50">
-                         <p className="text-sm font-medium">Editando arriba...</p>
-                      </div>
-                    ) : (
-                      <CustomerCard
-                        customer={customer}
-                        onEdit={handleEditCustomer}
-                        onDelete={handleDeleteCustomer}
-                      />
-                    )}
+                    <div className="p-7">
+                      {editingId === customer.id ? (
+                        <div className="flex flex-col items-center justify-center py-12 opacity-40">
+                          <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full mb-3" />
+                          <p className="text-sm font-bold uppercase tracking-widest">Editando...</p>
+                        </div>
+                      ) : (
+                        <CustomerCard
+                          customer={customer}
+                          onEdit={handleEditCustomer}
+                          onDelete={handleDeleteCustomer}
+                        />
+                      )}
                     </div>
-                    {/* Visual accent at the bottom */}
-                    {!editingId && (
-                      <div className="h-1 w-0 group-hover:w-full bg-primary transition-all duration-500 opacity-60" />
-                    )}
                   </CardContent>
                 </Card>
               ))}

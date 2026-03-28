@@ -1,6 +1,7 @@
 export interface CustomerPurchase {
   id: string;
   name: string;
+  email?: string;
   username: string;
   purchasesCount: number;
   lastUpdated: string; // ISO string
@@ -19,6 +20,7 @@ export async function fetchCustomers(adminPassword: string, query = ""): Promise
   return (data.customers || []).map((c: { 
     id: string; 
     name: string; 
+    email?: string;
     username: string; 
     purchases_count: number; 
     last_updated: string; 
@@ -27,6 +29,7 @@ export async function fetchCustomers(adminPassword: string, query = ""): Promise
   }) => ({
     id: c.id,
     name: c.name,
+    email: c.email,
     username: c.username,
     purchasesCount: c.purchases_count,
     lastUpdated: c.last_updated,
@@ -44,6 +47,7 @@ export async function updateCustomer(adminPassword: string, id: string, customer
     },
     body: JSON.stringify({
       name: customer.name,
+      email: customer.email,
       username: customer.username,
       purchases_count: customer.purchasesCount,
       is_verified: customer.isVerified,
@@ -56,6 +60,7 @@ export async function updateCustomer(adminPassword: string, id: string, customer
   return {
     id: c.id,
     name: c.name,
+    email: c.email,
     username: c.username,
     purchasesCount: c.purchases_count,
     lastUpdated: c.last_updated,
