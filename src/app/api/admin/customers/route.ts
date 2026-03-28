@@ -69,6 +69,16 @@ export async function POST(request: NextRequest) {
 
     if (error) throw error;
 
+    if (purchases_count > 0) {
+      await supabase.from("customer_loyalty_purchases").insert(
+        Array.from({ length: purchases_count }).map((_, i) => ({
+          customer_id: data.id,
+          purchase_date: new Date().toISOString(),
+          card_number: Math.floor(i / 10) + 1,
+        }))
+      );
+    }
+
     return NextResponse.json({ customer: data });
   } catch (err) {
     console.error("Error creating customer:", err);

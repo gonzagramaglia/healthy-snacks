@@ -83,7 +83,7 @@ export async function validateCoupon(params: {
 
   const supabase = createAdminClient();
   const { data, error } = await supabase
-    .from("coupons")
+    .from("discount_codes")
     .select(
       "id, code, type, value, max_discount, min_subtotal, active, starts_at, ends_at, usage_limit, used_count, allowed_email",
     )

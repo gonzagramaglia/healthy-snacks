@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
 
     const supabase = createAdminClient();
     const { data, error } = await supabase
-      .from("coupons")
+      .from("discount_codes")
       .select("*")
       .order("created_at", { ascending: false });
 
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
     };
 
     const { data, error } = await supabase
-      .from("coupons")
+      .from("discount_codes")
       .insert([payload])
       .select("*")
       .single();

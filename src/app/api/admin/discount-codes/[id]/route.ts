@@ -46,7 +46,7 @@ export async function PATCH(
     };
 
     const { data, error } = await supabase
-      .from("coupons")
+      .from("discount_codes")
       .update(payload)
       .eq("id", id)
       .select("*")
@@ -78,7 +78,7 @@ export async function DELETE(
     const { id } = await params;
     const supabase = createAdminClient();
 
-    const { error } = await supabase.from("coupons").delete().eq("id", id);
+    const { error } = await supabase.from("discount_codes").delete().eq("id", id);
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 });

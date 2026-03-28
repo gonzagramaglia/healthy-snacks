@@ -45,6 +45,15 @@ export async function PATCH(
 
     if (error) throw error;
 
+    // Record history if purchase count was updated
+    if (purchases_count !== undefined) {
+      await supabase.from("customer_loyalty_purchases").insert([{
+        customer_id: id,
+        purchase_date: new Date().toISOString(),
+        card_number: Math.floor((purchases_count - 1) / 10) + 1
+      }]);
+    }
+
     return NextResponse.json({ customer: data });
   } catch (err) {
     console.error("Error updating customer:", err);

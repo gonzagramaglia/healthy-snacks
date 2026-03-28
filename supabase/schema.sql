@@ -23,7 +23,7 @@ create index if not exists orders_created_at_idx on public.orders (created_at de
 create index if not exists orders_status_idx on public.orders (status);
 create index if not exists orders_email_idx on public.orders (email);
 
-create table if not exists public.coupons (
+create table if not exists public.discount_codes (
   id uuid primary key default gen_random_uuid(),
   code text not null unique,
   type text not null check (type in ('percentage', 'fixed')),
@@ -38,13 +38,38 @@ create table if not exists public.coupons (
   allowed_email text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
-  constraint coupons_dates_valid check (starts_at is null or ends_at is null or starts_at <= ends_at),
-  constraint coupons_usage_valid check (usage_limit is null or usage_limit >= 0),
-  constraint coupons_used_count_valid check (used_count >= 0)
+  constraint discount_codes_dates_valid check (starts_at is null or ends_at is null or starts_at <= ends_at),
+  constraint discount_codes_usage_valid check (usage_limit is null or usage_limit >= 0),
+  constraint discount_codes_used_count_valid check (used_count >= 0)
 );
 
-create index if not exists coupons_code_idx on public.coupons (code);
-create index if not exists coupons_active_idx on public.coupons (active);
+create index if not exists discount_codes_code_idx on public.discount_codes (code);
+create index if not exists discount_codes_active_idx on public.discount_codes (active);
+
+-- Customer Benefits / Loyalty Program
+create table if not exists public.customers (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  username text not null unique,
+  purchases_count integer not null default 0,
+  purchase_dates text[] not null default '{}',
+  last_updated timestamptz not null default now(),
+  is_verified boolean not null default false,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.customer_loyalty_purchases (
+  id uuid primary key default gen_random_uuid(),
+  customer_id uuid references public.customers(id) on delete cascade,
+  purchase_date timestamptz not null default now(),
+  -- Tracks which "loyalty card" this belongs to (1 for the first 10, 2 for the next 10, etc.)
+  card_number integer not null default 1, 
+  created_at timestamptz not null default now()
+);
+
+create index if not exists customers_username_idx on public.customers (username);
+create index if not exists customer_loyalty_purchases_customer_id_idx on public.customer_loyalty_purchases (customer_id);
 
 create or replace function public.set_updated_at()
 returns trigger
@@ -56,12 +81,17 @@ begin
 end;
 $$;
 
-drop trigger if exists coupons_set_updated_at on public.coupons;
-create trigger coupons_set_updated_at
-before update on public.coupons
+drop trigger if exists discount_codes_set_updated_at on public.discount_codes;
+create trigger discount_codes_set_updated_at
+before update on public.discount_codes
 for each row execute function public.set_updated_at();
 
--- Optional example coupon
-insert into public.coupons (code, type, value, max_discount, min_subtotal, active)
+drop trigger if exists customers_set_updated_at on public.customers;
+create trigger customers_set_updated_at
+before update on public.customers
+for each row execute function public.set_updated_at();
+
+-- Optional example data
+insert into public.discount_codes (code, type, value, max_discount, min_subtotal, active)
 values ('787', 'percentage', 7, 787, 1, true)
 on conflict (code) do nothing;

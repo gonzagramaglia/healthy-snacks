@@ -8,12 +8,10 @@ export interface CustomerPurchase {
   purchaseDates?: string[];
 }
 
-const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "";
-
-export async function fetchCustomers(query = ""): Promise<CustomerPurchase[]> {
+export async function fetchCustomers(adminPassword: string, query = ""): Promise<CustomerPurchase[]> {
   const res = await fetch(`/api/admin/customers?q=${query}`, {
     headers: {
-      "x-admin-password": ADMIN_PASSWORD,
+      "x-admin-password": adminPassword,
     },
   });
   if (!res.ok) throw new Error("Failed to fetch customers");
@@ -37,12 +35,12 @@ export async function fetchCustomers(query = ""): Promise<CustomerPurchase[]> {
   }));
 }
 
-export async function updateCustomer(id: string, customer: Partial<CustomerPurchase>): Promise<CustomerPurchase> {
+export async function updateCustomer(adminPassword: string, id: string, customer: Partial<CustomerPurchase>): Promise<CustomerPurchase> {
   const res = await fetch(`/api/admin/customers/${id}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
-      "x-admin-password": ADMIN_PASSWORD,
+      "x-admin-password": adminPassword,
     },
     body: JSON.stringify({
       name: customer.name,
@@ -66,11 +64,11 @@ export async function updateCustomer(id: string, customer: Partial<CustomerPurch
   };
 }
 
-export async function deleteCustomer(id: string): Promise<void> {
+export async function deleteCustomer(adminPassword: string, id: string): Promise<void> {
   const res = await fetch(`/api/admin/customers/${id}`, {
     method: "DELETE",
     headers: {
-      "x-admin-password": ADMIN_PASSWORD,
+      "x-admin-password": adminPassword,
     },
   });
   if (!res.ok) throw new Error("Failed to delete customer");
