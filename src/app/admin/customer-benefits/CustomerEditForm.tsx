@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { CustomerPurchase } from "@/lib/customers";
 import React, { useRef } from "react";
-import { CalendarIcon, PlusCircle, ShieldCheck } from "lucide-react";
+import { CalendarIcon, PlusCircle, ShieldCheck, X } from "lucide-react";
 
 interface EditFormProps {
   formData: Partial<CustomerPurchase>;
@@ -25,14 +25,22 @@ export function CustomerEditForm({
     while (newDates.length < 10) newDates.push("");
     newDates[index] = value;
     
-    const lastFilledIndex = [...newDates].reverse().findIndex(d => d && d.trim() !== "");
-    const newCount = lastFilledIndex === -1 ? 0 : 10 - lastFilledIndex;
+    // Recalculate count based on the last filled entry
+    const reversed = [...newDates].reverse();
+    const firstFilledFromBack = reversed.findIndex(d => d && d.trim() !== "");
+    const newCount = firstFilledFromBack === -1 ? 0 : 10 - firstFilledFromBack;
     
     setFormData({ 
       ...formData, 
       purchaseDates: newDates,
-      purchasesCount: Math.max(formData.purchasesCount || 0, newCount) 
+      // We allow the count to decrease if slots are cleared
+      purchasesCount: newCount 
     });
+  };
+
+  const clearSlot = (e: React.MouseEvent, index: number) => {
+    e.stopPropagation();
+    handleDateChange(index, "");
   };
 
   const currentCount = formData.purchasesCount || 0;
@@ -88,13 +96,13 @@ export function CustomerEditForm({
               <div className="flex items-center gap-4 md:gap-6">
                  <div className="relative">
                     <div className="text-5xl md:text-7xl font-black text-primary tracking-tighter leading-none">
-                      {currentCount}
+                       {currentCount}
                     </div>
                  </div>
                  <div className="space-y-1">
                     <p className="text-[10px] md:text-sm font-black uppercase tracking-widest text-foreground leading-tight">Compras Registradas</p>
                     <p className="text-[9px] md:text-xs font-bold text-muted-foreground uppercase opacity-70">
-                      Progreso: <span className="text-primary font-black">{currentCount * 10}%</span>
+                       Progreso: <span className="text-primary font-black">{currentCount * 10}%</span>
                     </p>
                  </div>
               </div>
@@ -102,8 +110,8 @@ export function CustomerEditForm({
               <div className="flex flex-col items-end gap-2">
                  {formData.isVerified ? (
                     <div className="flex items-center justify-center md:gap-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 w-8 h-8 md:w-auto md:px-3 md:py-1.5 rounded-full border border-blue-100 dark:border-blue-800 shadow-sm transition-all hover:scale-105">
-                      <ShieldCheck className="w-4 h-4" />
-                      <span className="hidden md:inline text-[10px] font-black uppercase tracking-widest">Verificado</span>
+                       <ShieldCheck className="w-4 h-4" />
+                       <span className="hidden md:inline text-[10px] font-black uppercase tracking-widest">Verificado</span>
                     </div>
                  ) : (
                     <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/30 px-2 py-1.5">Unverified</div>
@@ -128,7 +136,7 @@ export function CustomerEditForm({
           <div className="flex items-center justify-between gap-3">
              <div className="w-1.5 h-6 bg-primary rounded-full" />
              <Label className="text-base md:text-lg font-black uppercase tracking-tight text-foreground">
-               Historial de Slots
+                Historial de Slots
              </Label>
              <div className="h-[2px] flex-1 bg-primary/5 rounded-full" />
           </div>
@@ -137,6 +145,8 @@ export function CustomerEditForm({
             {Array.from({ length: 10 }).map((_, i) => {
               const isUnlocked = i < currentCount;
               const isNext = i === currentCount;
+              const dateValue = formData.purchaseDates?.[i] || "";
+              const hasDate = dateValue.trim() !== "";
               
               return (
                 <div 
@@ -144,11 +154,8 @@ export function CustomerEditForm({
                   onClick={() => {
                     const el = fileInputRefs.current[i] as (HTMLInputElement & { showPicker?: () => void }) | null;
                     if (el) {
-                      if (el.showPicker) {
-                        el.showPicker();
-                      } else {
-                        el.click();
-                      }
+                      if (el.showPicker) el.showPicker();
+                      else el.click();
                     }
                   }}
                   className={`
@@ -160,19 +167,33 @@ export function CustomerEditForm({
                       : "border-muted/10 bg-muted/5 opacity-40 cursor-not-allowed"}
                   `}
                 >
+                  {/* Clear Button (X) */}
+                  {hasDate && (
+                    <button
+                      type="button"
+                      onClick={(e) => clearSlot(e, i)}
+                      className="absolute top-2 right-2 z-10 w-6 h-6 rounded-full bg-red-500/10 text-red-500 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center hover:bg-red-500 hover:text-white"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  )}
+
                   <div className="flex justify-between items-center mb-2">
                     <span className={`text-[9px] font-black uppercase ${isUnlocked ? "text-primary/70" : "text-muted-foreground"}`}>
-                      Slot {i + 1}
+                       Slot {i + 1}
                     </span>
-                    {isUnlocked ? (
-                      <CalendarIcon className="w-3 h-3 text-primary" />
-                    ) : isNext ? (
-                      <PlusCircle className="w-3 h-3 text-primary animate-pulse" />
-                    ) : null}
+                    {!hasDate && (
+                      isUnlocked ? (
+                        <CalendarIcon className="w-3 h-3 text-primary/40" />
+                      ) : isNext ? (
+                        <PlusCircle className="w-3 h-3 text-primary animate-pulse" />
+                      ) : null
+                    )}
+                    {hasDate && <CalendarIcon className="w-3 h-3 text-primary" />}
                   </div>
                   
-                  <div className="text-center text-sm md:text-lg font-black">
-                     {formData.purchaseDates?.[i] || "-- / --"}
+                  <div className="text-center text-sm md:text-lg font-black tabular-nums">
+                      {dateValue || "Cargar"}
                   </div>
 
                   <input 
@@ -181,12 +202,14 @@ export function CustomerEditForm({
                     className="absolute inset-0 opacity-0 cursor-pointer pointer-events-none"
                     onChange={(e) => {
                       const val = (e.target as HTMLInputElement).value;
-                      if (val) {
-                        const parts = val.split("-");
-                        if (parts.length === 3) {
-                           const [, m, d] = parts;
-                           handleDateChange(i, `${d}/${m}`);
-                        }
+                      if (!val) {
+                        handleDateChange(i, "");
+                        return;
+                      }
+                      const parts = val.split("-");
+                      if (parts.length === 3) {
+                         const [, m, d] = parts;
+                         handleDateChange(i, `${d}/${m}`);
                       }
                     }}
                   />
