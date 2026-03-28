@@ -13,7 +13,7 @@ import {
   deleteCustomer 
 } from "@/lib/customers";
 import { toast } from "sonner";
-import { ArrowLeft, Plus, Users } from "lucide-react";
+import { ArrowLeft, Plus, Users, Star, ShieldCheck } from "lucide-react";
 
 export default function CustomerBenefitsPage() {
   const router = useRouter();
@@ -72,6 +72,7 @@ export default function CustomerBenefitsPage() {
     setEditingId(null);
     setFormData({
       name: "",
+      email: "",
       username: "",
       purchasesCount: 0,
       isVerified: false,
@@ -86,10 +87,7 @@ export default function CustomerBenefitsPage() {
     if (!adminPass) return;
     
     try {
-      // Clean up empty dates at the end if we want
-      const cleanedDates = (formData.purchaseDates || [])
-        .map(d => d.trim());
-      
+      const cleanedDates = (formData.purchaseDates || []).map(d => d.trim());
       const payload = { ...formData, purchaseDates: cleanedDates };
 
       if (editingId) {
@@ -99,7 +97,6 @@ export default function CustomerBenefitsPage() {
         );
         toast.success("Cliente actualizado");
       } else {
-        // Create new customer
         const res = await fetch("/api/admin/customers", {
           method: "POST",
           headers: {
@@ -108,6 +105,7 @@ export default function CustomerBenefitsPage() {
           },
           body: JSON.stringify({
             name: payload.name,
+            email: payload.email,
             username: payload.username,
             purchases_count: payload.purchasesCount,
             is_verified: payload.isVerified,
@@ -122,7 +120,6 @@ export default function CustomerBenefitsPage() {
       setEditingId(null);
       setIsAdding(false);
     } catch (error) {
-      console.error("Error updating customer:", error);
       toast.error("Error al guardar cliente");
     }
   };
@@ -136,8 +133,7 @@ export default function CustomerBenefitsPage() {
       setCustomers((prev) => prev.filter((c) => c.id !== id));
       toast.success("Cliente eliminado");
     } catch (error) {
-      console.error("Error deleting customer:", error);
-      toast.error("Error al eliminar cliente");
+      toast.error("Error al eliminar");
     }
   };
 
@@ -176,7 +172,7 @@ export default function CustomerBenefitsPage() {
           </div>
         </div>
 
-        {/* Search & Stats Bar placeholder */}
+        {/* Stats Section */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card className="bg-white/50 dark:bg-black/50 backdrop-blur-sm border-2 border-primary/5 rounded-2xl shadow-sm hover:border-primary/20 transition-all duration-300">
             <CardContent className="pt-6">
@@ -205,12 +201,12 @@ export default function CustomerBenefitsPage() {
           </Card>
         </div>
 
-        {/* Form Container with scroll ref */}
+        {/* Form Container */}
         <div ref={formRef}>
           {(isAdding || editingId) && (
             <Card className="border-2 border-primary/20 rounded-3xl shadow-2xl bg-white dark:bg-black overflow-hidden animate-in fade-in slide-in-from-top-4 duration-500">
               <CardContent className="p-8">
-                <div className="flex justify-between items-center mb-6">
+                <div className="flex justify-between items-center mb-8">
                    <h2 className="text-2xl font-black text-foreground uppercase tracking-tight">
                     {editingId ? "Editar Cliente" : "Registrar Nuevo Cliente"}
                   </h2>
@@ -240,33 +236,16 @@ export default function CustomerBenefitsPage() {
           {loading ? (
             <div className="grid gap-6 md:grid-cols-2">
               {[1, 2, 3, 4].map((i) => (
-                <Card key={i} className="border-2 border-primary/5 rounded-2xl overflow-hidden">
-                  <CardContent className="p-6 space-y-4">
-                    <div className="flex justify-between items-center">
-                      <div className="h-7 w-32 bg-muted animate-pulse rounded-md" />
-                      <div className="h-6 w-20 bg-muted animate-pulse rounded-md" />
-                    </div>
-                    <div className="space-y-3">
-                      <div className="h-4 w-24 bg-muted animate-pulse rounded-md" />
-                      <div className="h-4 w-full bg-muted animate-pulse rounded-md" />
-                      <div className="h-1.5 w-full bg-muted animate-pulse rounded-full" />
-                    </div>
-                    <div className="flex gap-2 pt-2">
-                      <div className="h-9 w-9 bg-muted animate-pulse rounded-lg" />
-                      <div className="h-9 w-9 bg-muted animate-pulse rounded-lg" />
-                      <div className="h-9 w-24 bg-muted animate-pulse rounded-lg" />
-                    </div>
-                  </CardContent>
-                </Card>
+                <Card key={i} className="border-2 border-primary/5 rounded-[2rem] overflow-hidden bg-muted/20 animate-pulse h-48" />
               ))}
             </div>
           ) : customers.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-24 border-2 border-dashed border-primary/10 rounded-[3rem] bg-white/30 dark:bg-black/30 backdrop-blur-sm">
               <div className="w-24 h-24 bg-primary/5 rounded-full flex items-center justify-center mb-6">
-                <Plus className="w-12 h-12 text-primary/20" />
+                <Star className="w-12 h-12 text-primary/20" />
               </div>
               <h3 className="text-3xl font-black text-foreground mb-2">No hay clientes aún</h3>
-              <p className="text-muted-foreground max-w-sm text-center font-medium">
+              <p className="text-muted-foreground text-center font-medium">
                 Empezá registrando tu primer cliente para gestionar sus beneficios.
               </p>
             </div>
@@ -276,16 +255,16 @@ export default function CustomerBenefitsPage() {
                 <Card 
                   key={customer.id} 
                   className={`
-                    hover:border-primary/40 hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 border-2 rounded-3xl group overflow-hidden bg-white dark:bg-black
+                    hover:border-primary/40 hover:shadow-2xl hover:shadow-primary/5 transition-all duration-500 border-2 rounded-[2rem] group overflow-hidden bg-white dark:bg-black
                     ${editingId === customer.id ? "border-primary/30 ring-4 ring-primary/5" : "border-primary/5"}
                   `}
                 >
                   <CardContent className="p-0">
-                    <div className="p-7">
+                    <div className="p-8">
                       {editingId === customer.id ? (
                         <div className="flex flex-col items-center justify-center py-12 opacity-40">
-                          <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full mb-3" />
-                          <p className="text-sm font-bold uppercase tracking-widest">Editando...</p>
+                          <ShieldCheck className="w-10 h-10 text-primary animate-pulse mb-3" />
+                          <p className="text-sm font-bold uppercase tracking-widest">Gestionando...</p>
                         </div>
                       ) : (
                         <CustomerCard

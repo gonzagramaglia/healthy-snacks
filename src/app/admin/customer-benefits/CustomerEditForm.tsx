@@ -29,7 +29,7 @@ export function CustomerEditForm({
   };
 
   return (
-    <form onSubmit={onSave} className="space-y-6">
+    <form onSubmit={onSave} className="space-y-8">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="space-y-2">
           <Label className="text-sm font-semibold">Nombre Completo</Label>
