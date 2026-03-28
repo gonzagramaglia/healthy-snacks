@@ -20,14 +20,9 @@ export function CustomerCard({
         <div className="flex-1 space-y-3">
           <div className="flex items-center gap-3">
             <h3 className="text-3xl font-black tracking-tight">{customer.name}</h3>
-            {customer.isVerified ? (
-              <div className="flex items-center gap-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-blue-100 dark:border-blue-800">
-                <ShieldCheck className="w-3 h-3" />
-                Verificado
-              </div>
-            ) : (
-               <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-30">
-                Pendiente
+            {customer.isVerified && (
+              <div className="flex items-center justify-center bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 w-7 h-7 rounded-full border border-blue-100 dark:border-blue-800 shadow-sm">
+                <ShieldCheck className="w-4 h-4" />
               </div>
             )}
           </div>
