@@ -16,6 +16,7 @@ type Customer = {
   is_verified: boolean;
   last_updated: string;
   created_at: string;
+  purchase_dates?: string[];
 };
 
 type CustomerForm = {
@@ -23,6 +24,7 @@ type CustomerForm = {
   username: string;
   purchases_count: number;
   is_verified: boolean;
+  purchase_dates?: string[];
 };
 
 export default function CustomerBenefitsPage() {
@@ -40,6 +42,7 @@ export default function CustomerBenefitsPage() {
     username: "",
     purchases_count: 0,
     is_verified: true,
+    purchase_dates: [],
   });
 
   const fetchCustomers = useCallback(
@@ -167,6 +170,7 @@ export default function CustomerBenefitsPage() {
       username: customer.username,
       purchases_count: customer.purchases_count,
       is_verified: customer.is_verified,
+      purchase_dates: customer.purchase_dates || [],
     });
     setEditingId(customer.id);
     setShowForm(true);
@@ -296,6 +300,18 @@ export default function CustomerBenefitsPage() {
                   </div>
                 </div>
 
+                <div>
+                  <Label>Fechas de compras (separadas por coma)</Label>
+                  <Input
+                    type="text"
+                    value={formData.purchase_dates?.join(", ") || ""}
+                    onChange={e => setFormData({
+                      ...formData,
+                      purchase_dates: e.target.value.split(",").map(f => f.trim()).filter(Boolean)
+                    })}
+                    placeholder="Ej: 1/3, 3/3, 5/3"
+                  />
+                </div>
                 <div className="flex gap-2 pt-4">
                   <Button type="submit">Guardar Cambios</Button>
                   <Button
@@ -315,13 +331,19 @@ export default function CustomerBenefitsPage() {
         )}
 
         {loading ? (
-          <div className="text-center py-10">Cargando clientes...</div>
+          <div className="flex flex-col items-center justify-center py-10">
+            <svg className="animate-spin h-8 w-8 text-primary mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+            </svg>
+            <div className="text-lg text-muted-foreground">Cargando clientes...</div>
+          </div>
         ) : customers.length === 0 ? (
           <div className="text-center py-10 text-muted-foreground border-2 border-dashed rounded-xl">
             No se encontraron clientes. ¿Querés crear el primero?
           </div>
         ) : (
-          <div className="grid gap-4">
+          <div className="grid gap-4 md:grid-cols-2">
             {customers.map((customer) => (
               <Card key={customer.id} className="hover:border-primary/40 transition-colors">
                 <CardContent className="pt-6">
@@ -341,7 +363,11 @@ export default function CustomerBenefitsPage() {
                       <p className="text-sm text-muted-foreground">
                         Compras: <span className="font-bold text-primary">{customer.purchases_count}/10</span>
                       </p>
-                      
+                      {customer.purchase_dates && customer.purchase_dates.length > 0 && (
+                        <div className="text-xs text-muted-foreground mt-1">
+                          Fechas: {customer.purchase_dates.join(", ")}
+                        </div>
+                      )}
                       {/* Barrita de progreso visual */}
                       <div className="w-full max-w-xs bg-muted h-1.5 rounded-full mt-2 overflow-hidden">
                           <div 
