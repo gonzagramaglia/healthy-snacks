@@ -79,12 +79,17 @@ export async function PATCH(
     if (diff > 0) {
       try {
         const historyRecords = [];
+        const baseDate = new Date();
         for (let i = 0; i < diff; i++) {
           const currentPurchaseIndex = oldCount + i;
           const cardNumber = Math.floor(currentPurchaseIndex / 10) + 1;
+          
+          // Add 1 second offset to each so they are distinct timestamps
+          const pDate = new Date(baseDate.getTime() + (i * 1000));
+          
           historyRecords.push({
             customer_id: id,
-            purchase_date: new Date().toISOString(),
+            purchase_date: pDate.toISOString(),
             card_number: cardNumber
           });
         }
