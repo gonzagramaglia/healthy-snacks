@@ -148,25 +148,24 @@ export default function CustomerBenefitsPage() {
     <div className="min-h-screen bg-[#fafafa] dark:bg-[#050505] text-foreground">
       <div className="max-w-6xl mx-auto p-4 md:p-10 space-y-6 md:space-y-12">
         {/* Header Section */}
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-12">
           <div className="space-y-1">
-            <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-foreground bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
-              Fidelización
+            <h1 className="text-5xl font-black tracking-tight text-foreground">
+              Gestión de <span className="text-primary">Beneficios</span>
             </h1>
-            <p className="text-muted-foreground text-sm md:text-lg font-medium opacity-70">
-              GESTIÓN DE BENEFICIOS Y LEALTAD
+            <p className="text-muted-foreground text-lg font-medium opacity-80">
+              Administrá los cupones y la lealtad de tus clientes.
             </p>
           </div>
           
-          <div className="flex items-center justify-between gap-4 w-full">
+          <div className="flex items-center justify-between gap-4 w-full md:w-auto">
             <Button 
               variant="outline" 
               onClick={() => router.push("/admin")}
-              className="flex-1 md:flex-none h-11 md:h-12 gap-2 rounded-xl border-2 font-black text-xs md:text-sm uppercase tracking-widest"
+              className="flex-1 md:flex-none h-11 md:h-12 gap-2 rounded-xl border-2 font-black text-xs md:text-sm uppercase tracking-widest hover:bg-muted"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span className="md:inline">Panel Admin</span>
-              <span className="md:hidden">Atrás</span>
+              <span>Panel Admin</span>
             </Button>
             <Button 
               onClick={handleAddNew}

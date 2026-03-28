@@ -82,7 +82,7 @@ export default function AdminPage() {
               Panel de <span className="text-primary">Control</span>
             </h1>
             <p className="text-muted-foreground text-lg font-medium opacity-80">
-              Bienvenido de nuevo, <span className="text-foreground font-bold">gonza@moovimiento.com</span>
+              Bienvenido de nuevo, <span className="text-foreground font-bold">Gonza</span>
             </p>
           </div>
           <Button

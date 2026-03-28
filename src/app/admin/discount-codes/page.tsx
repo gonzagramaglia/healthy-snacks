@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { 
@@ -18,7 +18,8 @@ import {
   Edit2, 
   CheckCircle2, 
   XCircle,
-  ExternalLink
+  ExternalLink,
+  ChevronRight
 } from "lucide-react";
 
 type Coupon = {
@@ -97,7 +98,8 @@ export default function CouponsPage() {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Failed to load coupons");
         setCoupons(data.coupons || []);
-      } catch (err) {
+      } catch (error: unknown) {
+        console.error("Error loading coupons:", error);
         toast.error("Error al cargar cupones");
       } finally {
         setLoading(false);
@@ -129,7 +131,7 @@ export default function CouponsPage() {
           body: JSON.stringify(formData),
         });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Failed to update coupon");
+        if (!res.ok) throw new Error(data.details || data.error || "Failed to update coupon");
         toast.success("Código actualizado");
       } else {
         const res = await fetch("/api/admin/discount-codes", {
@@ -141,15 +143,16 @@ export default function CouponsPage() {
           body: JSON.stringify(formData),
         });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Failed to create coupon");
+        if (!res.ok) throw new Error(data.details || data.error || "Failed to create coupon");
         toast.success("Código creado");
       }
 
       setShowForm(false);
       setEditingId(null);
       await fetchCoupons();
-    } catch (err) {
-      toast.error("Error al guardar el código");
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Error al guardar el código";
+      toast.error(message);
     }
   };
 
@@ -168,7 +171,7 @@ export default function CouponsPage() {
       if (!res.ok) throw new Error(data.error || "Failed to delete coupon");
       toast.success("Código eliminado");
       await fetchCoupons();
-    } catch (err) {
+    } catch (error: unknown) {
       toast.error("Error al eliminar");
     }
   };
@@ -192,27 +195,27 @@ export default function CouponsPage() {
   if (!adminPass) return null;
 
   return (
-    <div className="min-h-screen bg-[#fafafa] dark:bg-[#050505]">
-      <div className="max-w-6xl mx-auto p-6 md:p-10 space-y-8">
+    <div className="min-h-screen bg-[#fafafa] dark:bg-[#050505] text-foreground">
+      <div className="max-w-6xl mx-auto p-4 md:p-10 space-y-6 md:space-y-12">
         {/* Header Section */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-12">
           <div className="space-y-1">
-            <h1 className="text-4xl font-extrabold tracking-tight text-foreground bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
-              Códigos de Descuento
+            <h1 className="text-5xl font-black tracking-tight text-foreground">
+              Códigos de <span className="text-primary">Descuento</span>
             </h1>
-            <p className="text-muted-foreground text-lg">
-              Creá y gestioná cupones promocionales (ej: OFF10).
+            <p className="text-muted-foreground text-lg font-medium opacity-80">
+              Creá y gestioná cupones promocionales (ej: <span className="text-foreground font-bold font-mono">OFF10</span>).
             </p>
           </div>
           
-          <div className="flex items-center gap-3">
+          <div className="flex items-center justify-between gap-4 w-full md:w-auto">
             <Button 
               variant="outline" 
               onClick={() => router.push("/admin")}
-              className="gap-2 rounded-xl border-2 hover:bg-muted font-bold"
+              className="flex-1 md:flex-none h-11 md:h-12 gap-2 rounded-xl border-2 font-black text-xs md:text-sm uppercase tracking-widest hover:bg-muted"
             >
               <ArrowLeft className="w-4 h-4" />
-              Panel Admin
+              <span>Panel Admin</span>
             </Button>
             <Button 
               onClick={() => {
@@ -230,7 +233,7 @@ export default function CouponsPage() {
                  });
                  scrollToForm();
               }}
-              className="gap-2 rounded-xl border-2 shadow-lg shadow-primary/10 font-bold"
+              className="flex-1 md:flex-none h-11 md:h-12 gap-2 rounded-xl border-2 shadow-xl shadow-primary/10 font-black text-xs md:text-sm uppercase tracking-widest"
             >
               <Plus className="w-4 h-4" />
               Nuevo Código
@@ -238,29 +241,37 @@ export default function CouponsPage() {
           </div>
         </div>
 
-        {/* Stats Section */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="bg-white/50 dark:bg-black/50 backdrop-blur-sm border-2 border-primary/5 rounded-2xl shadow-sm hover:border-primary/20 transition-all duration-300">
-            <CardContent className="pt-6">
-              <div className="flex justify-between items-center mb-1">
-                <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Total Códigos</div>
-                <Ticket className="w-4 h-4 text-primary/40" />
+        {/* Stats Section - 3 across on Mobile! */}
+        <div className="grid grid-cols-3 gap-2 md:gap-8">
+          <Card className="bg-white/50 dark:bg-black/50 backdrop-blur-md border-2 border-primary/5 rounded-xl md:rounded-3xl shadow-sm hover:border-primary/20 transition-all duration-300 group">
+            <CardContent className="p-3 md:p-8">
+              <div className="flex justify-between items-center mb-1 md:mb-3">
+                <div className="text-[8px] md:text-xs font-black text-muted-foreground uppercase tracking-widest opacity-50">Cupones</div>
+                <Ticket className="w-3 h-3 md:w-5 md:h-5 text-primary/30 group-hover:text-primary/60 transition-colors" />
               </div>
-              <div className="text-4xl font-black mt-1">{loading ? "..." : coupons.length}</div>
+              <div className="text-xl md:text-5xl font-black tracking-tighter">{loading ? "..." : coupons.length}</div>
             </CardContent>
           </Card>
-          <Card className="bg-white/50 dark:bg-black/50 backdrop-blur-sm border-2 border-primary/5 rounded-2xl shadow-sm hover:border-primary/20 transition-all duration-300">
-            <CardContent className="pt-6">
-               <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">Activos</div>
-              <div className="text-4xl font-black mt-1 text-green-500">
+          
+          <Card className="bg-white/50 dark:bg-black/50 backdrop-blur-md border-2 border-primary/5 rounded-xl md:rounded-3xl shadow-sm hover:border-primary/20 transition-all duration-300 group">
+            <CardContent className="p-3 md:p-8">
+              <div className="flex justify-between items-center mb-1 md:mb-3">
+                <div className="text-[8px] md:text-xs font-black text-muted-foreground uppercase tracking-widest opacity-50">Activos</div>
+                <CheckCircle2 className="w-3 h-3 md:w-5 md:h-5 text-green-500/30 group-hover:text-green-500 transition-colors" />
+              </div>
+              <div className="text-xl md:text-5xl font-black tracking-tighter text-green-500">
                 {loading ? "..." : coupons.filter(c => c.active).length}
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-white/50 dark:bg-black/50 backdrop-blur-sm border-2 border-primary/5 rounded-2xl shadow-sm hover:border-primary/20 transition-all duration-300">
-            <CardContent className="pt-6">
-              <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">Uso Total</div>
-              <div className="text-4xl font-black mt-1 text-primary">
+          
+          <Card className="bg-white/50 dark:bg-black/50 backdrop-blur-md border-2 border-primary/5 rounded-xl md:rounded-3xl shadow-sm hover:border-primary/20 transition-all duration-300 group">
+            <CardContent className="p-3 md:p-8">
+              <div className="flex justify-between items-center mb-1 md:mb-3">
+                <div className="text-[8px] md:text-xs font-black text-muted-foreground uppercase tracking-widest opacity-50">Usos</div>
+                <History className="w-3 h-3 md:w-5 md:h-5 text-primary/30 group-hover:text-primary/60 transition-colors" />
+              </div>
+              <div className="text-xl md:text-5xl font-black tracking-tighter text-primary">
                 {loading ? "..." : coupons.reduce((acc, c) => acc + c.used_count, 0)}
               </div>
             </CardContent>
@@ -268,90 +279,90 @@ export default function CouponsPage() {
         </div>
 
         {/* Form Container */}
-        <div ref={formRef}>
+        <div ref={formRef} className="scroll-mt-10">
           {showForm && (
-            <Card className="border-2 border-primary/20 rounded-3xl shadow-2xl bg-white dark:bg-black overflow-hidden animate-in fade-in slide-in-from-top-4 duration-500">
-              <CardContent className="p-8">
-                <div className="flex justify-between items-center mb-8">
-                   <h2 className="text-2xl font-black text-foreground uppercase tracking-tight">
-                    {editingId ? "Editar Código" : "Crear Nuevo Código"}
+            <Card className="border-2 border-primary/20 rounded-3xl md:rounded-[3rem] shadow-2xl bg-white dark:bg-black overflow-hidden animate-in fade-in slide-in-from-top-4 duration-500">
+              <CardContent className="p-5 md:p-12">
+                <div className="flex justify-between items-center mb-6 md:mb-10">
+                   <h2 className="text-xl md:text-3xl font-black text-foreground uppercase tracking-tight">
+                    {editingId ? "Editar Cupón" : "Nuevo Cupón"}
                   </h2>
-                  <div className="h-1 flex-1 mx-4 bg-muted/30 rounded-full" />
+                   <div className="h-1.5 flex-1 mx-4 bg-primary/5 rounded-full" />
                 </div>
                 
-                <form onSubmit={handleSaveCoupon} className="space-y-8">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div className="space-y-2">
-                       <Label className="text-sm font-bold uppercase opacity-70">Código (Ej: VERANO20)</Label>
+                <form onSubmit={handleSaveCoupon} className="space-y-6 md:space-y-10">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10">
+                    <div className="space-y-2 md:space-y-4">
+                       <Label className="text-xs md:text-sm font-black uppercase tracking-widest opacity-60">Código (Ej: VERANO20)</Label>
                        <Input
-                         className="h-12 text-xl font-mono font-bold rounded-xl border-2 focus:ring-primary/20 uppercase"
+                         className="h-12 md:h-16 text-xl md:text-3xl font-black font-mono rounded-2xl border-2 focus:ring-primary/40 uppercase bg-muted/5 tracking-tighter"
                          value={formData.code}
                          onChange={(e) => setFormData({...formData, code: e.target.value.toUpperCase()})}
                          placeholder="OFF50"
                          required
                        />
                     </div>
-                    <div className="space-y-2">
-                       <Label className="text-sm font-bold uppercase opacity-70">Tipo de Descuento</Label>
-                       <div className="grid grid-cols-2 gap-2">
+                    <div className="space-y-2 md:space-y-4">
+                       <Label className="text-xs md:text-sm font-black uppercase tracking-widest opacity-60">Tipo de Descuento</Label>
+                       <div className="grid grid-cols-2 gap-3 md:gap-4">
                           <Button
                             type="button"
                             variant={formData.type === "percentage" ? "default" : "outline"}
-                            className="h-12 rounded-xl transition-all font-bold"
+                            className="h-12 md:h-16 rounded-2xl transition-all font-black text-xs md:text-sm uppercase tracking-widest shadow-inner"
                             onClick={() => setFormData({...formData, type: "percentage"})}
                           >
                             <Percent className="w-4 h-4 mr-2" />
-                            Porcentaje
+                            %
                           </Button>
                           <Button
                             type="button"
                             variant={formData.type === "fixed" ? "default" : "outline"}
-                            className="h-12 rounded-xl transition-all font-bold"
+                            className="h-12 md:h-16 rounded-2xl transition-all font-black text-xs md:text-sm uppercase tracking-widest shadow-inner"
                             onClick={() => setFormData({...formData, type: "fixed"})}
                           >
                             <DollarSign className="w-4 h-4 mr-2" />
-                            Monto Fijo
+                            Fijo
                           </Button>
                        </div>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
                     <div className="space-y-2">
-                       <Label className="text-sm font-bold uppercase opacity-70">Valor</Label>
+                       <Label className="text-[10px] md:text-xs font-black uppercase tracking-widest opacity-60">Valor</Label>
                        <Input
                          type="number"
-                         className="h-11 rounded-xl border-2 font-bold"
+                         className="h-12 md:h-14 rounded-xl md:rounded-2xl border-2 font-black text-lg md:text-xl bg-muted/5"
                          value={formData.value}
                          onChange={(e) => setFormData({...formData, value: parseFloat(e.target.value) || 0})}
                          required
                        />
                     </div>
                     <div className="space-y-2">
-                       <Label className="text-sm font-bold uppercase opacity-70">Tope Máx ($)</Label>
+                       <Label className="text-[10px] md:text-xs font-black uppercase tracking-widest opacity-60">Tope Máx ($)</Label>
                        <Input
                          type="number"
-                         className="h-11 rounded-xl border-2"
+                         className="h-12 md:h-14 rounded-xl md:rounded-2xl border-2 font-bold bg-muted/5"
                          value={formData.max_discount ?? ""}
                          onChange={(e) => setFormData({...formData, max_discount: e.target.value ? parseFloat(e.target.value) : null})}
                          placeholder="Sin tope"
                        />
                     </div>
                     <div className="space-y-2">
-                       <Label className="text-sm font-bold uppercase opacity-70">Mín. Compra ($)</Label>
+                       <Label className="text-[10px] md:text-xs font-black uppercase tracking-widest opacity-60">Mín. Compra</Label>
                        <Input
                          type="number"
-                         className="h-11 rounded-xl border-2"
+                         className="h-12 md:h-14 rounded-xl md:rounded-2xl border-2 font-bold bg-muted/5"
                          value={formData.min_subtotal ?? ""}
                          onChange={(e) => setFormData({...formData, min_subtotal: e.target.value ? parseFloat(e.target.value) : null})}
                          placeholder="Sin mínimo"
                        />
                     </div>
                     <div className="space-y-2">
-                       <Label className="text-sm font-bold uppercase opacity-70">Límite Uso</Label>
+                       <Label className="text-[10px] md:text-xs font-black uppercase tracking-widest opacity-60">Límite Uso</Label>
                        <Input
                          type="number"
-                         className="h-11 rounded-xl border-2"
+                         className="h-12 md:h-14 rounded-xl md:rounded-2xl border-2 font-bold bg-muted/5"
                          value={formData.usage_limit ?? ""}
                          onChange={(e) => setFormData({...formData, usage_limit: e.target.value ? parseInt(e.target.value) : null})}
                          placeholder="∞ Ilimitado"
@@ -359,39 +370,48 @@ export default function CouponsPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10">
                     <div className="space-y-2">
-                       <Label className="text-sm font-bold uppercase opacity-70">Email Permitido (Opcional)</Label>
+                       <Label className="text-xs md:text-sm font-black uppercase tracking-widest opacity-60">Email Restringido (Opcional)</Label>
                        <Input
                          type="email"
-                         className="h-11 rounded-xl border-2"
+                         className="h-12 md:h-14 rounded-xl md:rounded-2xl border-2 font-bold bg-muted/5"
                          value={formData.allowed_email ?? ""}
                          onChange={(e) => setFormData({...formData, allowed_email: e.target.value || null})}
-                         placeholder="solo-este-usuario@gmail.com"
+                         placeholder="solo-este@mail.com"
                        />
                     </div>
-                    <div className="flex items-center gap-3 pt-6">
-                       <input
-                         type="checkbox"
-                         id="active-form"
-                         checked={formData.active}
-                         onChange={(e) => setFormData({...formData, active: e.target.checked})}
-                         className="w-6 h-6 rounded-lg border-2 border-primary/20 text-primary transition-all"
-                       />
-                       <Label htmlFor="active-form" className="text-lg font-bold cursor-pointer">
-                         Código Activo
-                       </Label>
+                    <div className="flex items-center gap-4 bg-muted/10 p-4 md:p-6 rounded-2xl border-2 border-primary/5">
+                        <div className="relative flex items-center">
+                          <input
+                            type="checkbox"
+                            id="active-form"
+                            checked={formData.active}
+                            onChange={(e) => setFormData({...formData, active: e.target.checked})}
+                            className="w-7 h-7 md:w-8 md:h-8 rounded-lg border-2 border-primary/20 text-primary transition-all cursor-pointer focus:ring-primary/20"
+                          />
+                        </div>
+                       <div className="space-y-0.5">
+                          <Label htmlFor="active-form" className="text-base md:text-xl font-black cursor-pointer uppercase tracking-tight">
+                            Código Activo
+                          </Label>
+                          <p className="text-[10px] md:text-xs font-bold text-muted-foreground opacity-60 uppercase">DIsponible para los clientes</p>
+                       </div>
                     </div>
                   </div>
 
-                  <div className="flex gap-4 pt-6 border-t border-primary/5">
-                    <Button type="submit" className="h-12 px-10 rounded-xl font-bold text-lg shadow-xl shadow-primary/20">
-                      {editingId ? "Guardar Cambios" : "Crear Código"}
+                  <div className="flex gap-4 pt-8 border-t border-primary/10">
+                    <Button 
+                      type="submit" 
+                      className="flex-1 md:flex-none h-12 md:h-16 px-8 md:px-14 rounded-xl md:rounded-[2rem] font-black text-base md:text-xl shadow-2xl shadow-primary/30 transition-all active:scale-95"
+                    >
+                      <span className="md:hidden">Guardar</span>
+                      <span className="hidden md:inline">{editingId ? "Actualizar Cupón" : "Crear Cupón"}</span>
                     </Button>
                     <Button 
                       type="button" 
                       variant="outline" 
-                      className="h-12 px-10 rounded-xl font-bold border-2"
+                      className="flex-1 md:flex-none h-12 md:h-16 px-6 md:px-10 rounded-xl md:rounded-[2rem] font-black text-base md:text-lg border-2 hover:bg-red-50 hover:text-red-500 transition-all"
                       onClick={() => {
                         setShowForm(false);
                         setEditingId(null);
@@ -407,95 +427,119 @@ export default function CouponsPage() {
         </div>
 
         {/* List Section */}
-        <div className="space-y-6">
-          <div className="flex items-center gap-2">
-             <div className="w-2 h-8 bg-primary rounded-full" />
-             <h2 className="text-2xl font-black text-foreground uppercase tracking-tight">Códigos Disponibles</h2>
+        <div className="space-y-6 md:space-y-10">
+          <div className="flex items-center gap-4">
+             <div className="w-2 md:w-3 h-8 md:h-12 bg-primary rounded-full shadow-lg shadow-primary/20" />
+             <h2 className="text-2xl md:text-4xl font-black text-foreground uppercase tracking-tighter">Listado de Códigos</h2>
           </div>
 
           {loading ? (
-             <div className="grid gap-6 md:grid-cols-2">
+             <div className="grid gap-4 md:grid-cols-2">
               {[1, 2, 3, 4].map((i) => (
-                <Card key={i} className="border-2 border-primary/5 rounded-2xl overflow-hidden h-48 animate-pulse bg-muted/20" />
+                <Card key={i} className="border-2 border-primary/5 rounded-[2rem] overflow-hidden h-48 md:h-64 animate-pulse bg-muted/20" />
               ))}
             </div>
           ) : coupons.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-24 border-2 border-dashed border-primary/10 rounded-[3rem] bg-white/30 dark:bg-black/30 backdrop-blur-sm">
-               <div className="w-24 h-24 bg-primary/5 rounded-full flex items-center justify-center mb-6">
-                <Ticket className="w-12 h-12 text-primary/20" />
-              </div>
-              <h3 className="text-3xl font-black text-foreground mb-2">No hay códigos aún</h3>
-              <p className="text-muted-foreground text-center font-medium">Presioná + Nuevo Código para empezar.</p>
+            <div className="flex flex-col items-center justify-center py-20 md:py-32 border-2 border-dashed border-primary/10 rounded-[2.5rem] md:rounded-[4rem] bg-white/30 dark:bg-black/30 backdrop-blur-sm">
+              <Ticket className="w-16 h-16 md:w-24 md:h-24 text-primary/10 mb-6 animate-bounce duration-[3000ms]" />
+              <h3 className="text-2xl md:text-4xl font-black text-foreground mb-3 tracking-tight">Sin cupones</h3>
+              <p className="text-muted-foreground text-center font-bold opacity-60 max-w-xs md:max-w-md px-6">
+                Creá tu primer código de descuento para incentivar las ventas en tu tienda.
+              </p>
             </div>
           ) : (
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-4 md:grid-cols-2 lg:gap-8">
               {coupons.map((coupon) => (
                 <Card 
                   key={coupon.id} 
                   className={`
-                    group border-2 rounded-[2rem] overflow-hidden bg-white dark:bg-black transition-all duration-500 hover:border-primary/40 hover:shadow-2xl hover:shadow-primary/5
-                    ${!coupon.active ? "opacity-60 grayscale" : "border-primary/5"}
+                    group border-2 rounded-[2rem] md:rounded-[2.5rem] overflow-hidden bg-white dark:bg-black transition-all duration-500 hover:border-primary/40 hover:shadow-2xl hover:shadow-primary/5
+                    ${!coupon.active ? "opacity-60 grayscale border-muted/20" : "border-primary/5"}
+                    ${editingId === coupon.id ? "ring-8 ring-primary/5 border-primary/30" : ""}
                   `}
                 >
-                  <CardContent className="p-8">
-                    <div className="flex justify-between items-start mb-6">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-3">
-                           <h3 className="text-3xl font-black tracking-tighter text-foreground font-mono">{coupon.code}</h3>
-                           {coupon.active ? (
-                             <CheckCircle2 className="w-5 h-5 text-green-500" />
-                           ) : (
-                             <XCircle className="w-5 h-5 text-red-400" />
-                           )}
+                  <CardContent className="p-0">
+                    <div className="p-6 md:p-10">
+                      <div className="flex justify-between items-start mb-6 md:mb-10">
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-3">
+                             <h3 className="text-2xl md:text-4xl font-black tracking-tighter text-foreground font-mono uppercase bg-primary/5 px-3 py-1 rounded-xl">{coupon.code}</h3>
+                             {coupon.active ? (
+                               <div className="w-6 h-6 md:w-8 md:h-8 bg-green-500/10 rounded-full flex items-center justify-center text-green-500">
+                                  <CheckCircle2 className="w-4 h-4 md:w-5 md:h-5" />
+                               </div>
+                             ) : (
+                               <div className="w-6 h-6 md:w-8 md:h-8 bg-red-500/10 rounded-full flex items-center justify-center text-red-400">
+                                  <XCircle className="w-4 h-4 md:w-5 md:h-5" />
+                               </div>
+                             )}
+                          </div>
+                          <div className="flex gap-2">
+                            <span className="text-[10px] md:text-xs font-black text-muted-foreground uppercase tracking-widest bg-muted/50 px-2 py-0.5 rounded-lg border border-primary/5">
+                              {coupon.type === "percentage" ? "Porcentual" : "Suma Fija"}
+                            </span>
+                            {!coupon.active && (
+                              <span className="text-[10px] md:text-xs font-black text-red-500 uppercase tracking-widest bg-red-500/5 px-2 py-0.5 rounded-lg border border-red-500/10">Inactivo</span>
+                            )}
+                          </div>
                         </div>
-                        <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest bg-muted/50 w-fit px-2 py-0.5 rounded">
-                          {coupon.type === "percentage" ? "Porcentaje" : "Monto Fijo"}
-                        </p>
+                        
+                        <div className="flex gap-2">
+                          <Button variant="ghost" size="icon" onClick={() => handleEditCoupon(coupon)} className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl hover:bg-primary/10 hover:text-primary transition-all">
+                            <Edit2 className="w-4 h-4 md:w-5 md:h-5" />
+                          </Button>
+                          <Button variant="ghost" size="icon" onClick={() => handleDeleteCoupon(coupon.id)} className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl hover:bg-red-50 hover:text-red-500 transition-all">
+                            <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
+                          </Button>
+                        </div>
                       </div>
-                      
-                      <div className="flex gap-1">
-                        <Button variant="ghost" size="icon" onClick={() => handleEditCoupon(coupon)} className="rounded-xl hover:bg-primary/10 hover:text-primary">
-                          <Edit2 className="w-4 h-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" onClick={() => handleDeleteCoupon(coupon.id)} className="rounded-xl hover:bg-red-50 hover:text-red-500">
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+
+                      <div className="flex items-end justify-between gap-4">
+                         <div className="space-y-6 flex-1">
+                            <div className="text-4xl md:text-6xl font-black text-primary tracking-tighter leading-none mb-1">
+                               {coupon.type === "percentage" ? `${coupon.value}%` : `$${coupon.value}`}
+                               {coupon.max_discount && <span className="text-sm md:text-lg font-bold text-muted-foreground/30 ml-3">MAX ${coupon.max_discount}</span>}
+                            </div>
+                            
+                            <div className="grid grid-cols-2 gap-x-6 md:gap-x-12 gap-y-3">
+                               <div className="space-y-1">
+                                  <p className="text-[9px] md:text-[10px] font-black text-muted-foreground uppercase opacity-40 tracking-widest">Uso Histórico</p>
+                                  <div className="flex items-center gap-2">
+                                     <div className="flex -space-x-1">
+                                        {[1,2,3].map(i => <div key={i} className="w-4 h-4 rounded-full border border-background bg-primary/10" />)}
+                                     </div>
+                                     <p className="text-sm md:text-xl font-black tabular-nums">
+                                       {coupon.used_count} <span className="text-muted-foreground/20 font-bold">/ {coupon.usage_limit || "∞"}</span>
+                                     </p>
+                                  </div>
+                               </div>
+                               <div className="space-y-1">
+                                  <p className="text-[9px] md:text-[10px] font-black text-muted-foreground uppercase opacity-40 tracking-widest">Condición base</p>
+                                  <p className="text-sm md:text-xl font-black tabular-nums">${coupon.min_subtotal || 0}</p>
+                               </div>
+                            </div>
+                         </div>
+
+                         <div className="relative group/tag hidden md:block">
+                            <div className="h-24 w-24 md:h-32 md:w-32 bg-primary/[0.03] border border-primary/5 rounded-[2.5rem] flex items-center justify-center group-hover:bg-primary/[0.05] transition-all duration-700">
+                               <Ticket className="w-12 h-12 md:w-16 md:h-16 text-primary/10 group-hover:text-primary/20 transition-all duration-700 -rotate-12 group-hover:rotate-0" />
+                               <ChevronRight className="absolute bottom-4 right-4 w-5 h-5 text-primary/10 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0" />
+                            </div>
+                         </div>
                       </div>
+
+                      {coupon.allowed_email && (
+                        <div className="mt-8 pt-6 border-t border-primary/10 flex items-center gap-3">
+                           <div className="w-8 h-8 rounded-full bg-primary/5 flex items-center justify-center text-primary/40">
+                              <ExternalLink className="w-4 h-4" />
+                           </div>
+                           <div className="space-y-0.5">
+                              <p className="text-[9px] font-black text-muted-foreground uppercase opacity-40">Acceso Restringido</p>
+                              <p className="text-xs md:text-sm font-bold text-foreground/80">{coupon.allowed_email}</p>
+                           </div>
+                        </div>
+                      )}
                     </div>
-
-                    <div className="flex items-end justify-between">
-                       <div className="space-y-4">
-                          <div className="text-4xl font-black text-primary">
-                             {coupon.type === "percentage" ? `${coupon.value}%` : `$${coupon.value}`}
-                             {coupon.max_discount && <span className="text-sm font-bold text-muted-foreground ml-2 opacity-60">Tope: ${coupon.max_discount}</span>}
-                          </div>
-                          
-                          <div className="grid grid-cols-2 gap-x-8 gap-y-2">
-                             <div className="space-y-0.5">
-                                <p className="text-[10px] font-bold text-muted-foreground uppercase opacity-60 tracking-wider">Usados</p>
-                                <p className="font-black flex items-center gap-1.5">
-                                  <History className="w-3 h-3 opacity-40" />
-                                  {coupon.used_count} <span className="text-muted-foreground/40 font-bold">/ {coupon.usage_limit || "∞"}</span>
-                                </p>
-                             </div>
-                             <div className="space-y-0.5">
-                                <p className="text-[10px] font-bold text-muted-foreground uppercase opacity-60 tracking-wider">Mín. Compra</p>
-                                <p className="font-black">${coupon.min_subtotal || 0}</p>
-                             </div>
-                          </div>
-                       </div>
-
-                       <div className="h-20 w-20 bg-primary/5 rounded-3xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-700 translate-y-4 group-hover:translate-y-0">
-                          <Ticket className="w-10 h-10 text-primary/20" />
-                       </div>
-                    </div>
-
-                    {coupon.allowed_email && (
-                      <div className="mt-6 pt-4 border-t border-primary/5 flex items-center gap-2 text-xs font-bold text-muted-foreground">
-                        <ExternalLink className="w-3 h-3" />
-                         Solo para: <span className="text-foreground">{coupon.allowed_email}</span>
-                      </div>
-                    )}
                   </CardContent>
                 </Card>
               ))}
