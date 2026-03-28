@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { validateCoupon } from "@/lib/coupons";
+import { validateCoupon } from "@/lib/discount-codes";
 
 type ValidateBody = {
   code?: string;

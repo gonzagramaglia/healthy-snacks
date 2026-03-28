@@ -74,14 +74,27 @@ export default function AdminPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Link href="/admin/coupons">
-            <Card className="h-full cursor-pointer hover:bg-accent transition">
+          <Link href="/admin/discount-codes">
+            <Card className="h-full cursor-pointer hover:bg-accent transition border-primary/20">
               <CardHeader>
-                <CardTitle>🎉 Manage Coupons</CardTitle>
+                <CardTitle>🎫 Administrar Códigos de Descuento</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  Create, edit, and manage discount codes for your customers.
+                  Creá, editá y gestioná códigos promocionales para tus clientes (ej: OFF10).
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
+
+          <Link href="/admin/customer-benefits">
+            <Card className="h-full cursor-pointer hover:bg-accent transition border-primary/20">
+              <CardHeader>
+                <CardTitle>⭐ Administrar Beneficios (Cupones)</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  Gestioná la fidelidad de tus clientes: editá sus puntos y tarjetas de compras.
                 </p>
               </CardContent>
             </Card>

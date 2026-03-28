@@ -62,7 +62,7 @@ export default function CouponsPage() {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch("/api/admin/coupons", {
+        const res = await fetch("/api/admin/discount-codes", {
           headers: {
             "Content-Type": "application/json",
             "x-admin-password": currentPass,
@@ -108,7 +108,7 @@ export default function CouponsPage() {
 
     try {
       if (editingId) {
-        const res = await fetch(`/api/admin/coupons/${editingId}`, {
+        const res = await fetch(`/api/admin/discount-codes/${editingId}`, {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
@@ -119,7 +119,7 @@ export default function CouponsPage() {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Failed to update coupon");
       } else {
-        const res = await fetch("/api/admin/coupons", {
+        const res = await fetch("/api/admin/discount-codes", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -154,7 +154,7 @@ export default function CouponsPage() {
 
     setError(null);
     try {
-      const res = await fetch(`/api/admin/coupons/${id}`, {
+      const res = await fetch(`/api/admin/discount-codes/${id}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -191,9 +191,9 @@ export default function CouponsPage() {
       <div className="container mx-auto py-10">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-4xl font-bold">Manage Coupons</h1>
+            <h1 className="text-4xl font-bold">Administrar Códigos de Descuento</h1>
             <p className="text-muted-foreground mt-2">
-              Create and manage discount codes
+              Creá y gestioná cupones promocionales (ej: OFF10).
             </p>
           </div>
           <div className="flex gap-2">
@@ -216,7 +216,7 @@ export default function CouponsPage() {
                 });
               }}
             >
-              + New Coupon
+              + Nuevo Código
             </Button>
           </div>
         </div>
@@ -231,7 +231,7 @@ export default function CouponsPage() {
           <Card className="mb-6">
             <CardHeader>
               <CardTitle>
-                {editingId ? "Edit Coupon" : "Create Coupon"}
+                {editingId ? "Editar Código" : "Crear Código"}
               </CardTitle>
             </CardHeader>
             <CardContent>

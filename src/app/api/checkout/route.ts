@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { MercadoPagoConfig, Preference } from "mercadopago";
 import { saveOrder, OrderItem } from "@/lib/orders";
-import { validateCoupon } from "@/lib/coupons";
+import { validateCoupon } from "@/lib/discount-codes";
 
 // Configurar Mercado Pago
 const client = new MercadoPagoConfig({

@@ -269,7 +269,7 @@ export function MixBuilder({ lang = "es" }: { lang?: Language }) {
       const subtotal =
         computePrice(totalMixQty).price +
         (deliveryOption === "envio" ? DELIVERY_COST : 0);
-      const res = await fetch("/api/coupons/validate", {
+      const res = await fetch("/api/discount-codes/validate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
