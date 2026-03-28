@@ -16,13 +16,14 @@ export async function PATCH(
 
     const { id } = await params;
     const body = await request.json();
-    const { name, username, purchases_count, is_verified } = body;
+    const { name, username, purchases_count, is_verified, purchase_dates } = body;
 
     type UpdateCustomer = {
       name?: string;
       username?: string;
       purchases_count?: number;
       is_verified?: boolean;
+      purchase_dates?: string[];
       last_updated?: string;
     };
     const updateData: UpdateCustomer = {};
@@ -31,6 +32,7 @@ export async function PATCH(
     if (purchases_count !== undefined)
       updateData.purchases_count = purchases_count;
     if (is_verified !== undefined) updateData.is_verified = is_verified;
+    if (purchase_dates !== undefined) updateData.purchase_dates = purchase_dates;
     updateData.last_updated = new Date().toISOString();
 
     const supabase = createAdminClient();

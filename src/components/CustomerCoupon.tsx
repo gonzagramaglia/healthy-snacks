@@ -41,7 +41,7 @@ export function CustomerCoupon({
             <div className="flex items-center gap-2 justify-center md:justify-start">
               <h2 className="text-3xl font-bold tracking-tight">
                 {lang === "es" ? "¡Hola," : "Hi,"}{" "}
-                <span className="text-primary">{data.customerName}</span>! 👋
+                <span className="text-primary">{data.name}</span>! 👋
               </h2>
               {data.isVerified && (
                 <div
@@ -77,7 +77,7 @@ export function CustomerCoupon({
                   href={lang === "en" ? "/en/u/" : "/u/"}
                   className="text-[10px] md:text-xs text-muted-foreground/30 hover:text-muted-foreground/60 transition-colors hover:underline"
                 >
-                  {t.coupon_not_user.replace("{name}", data.customerName)}{" "}
+                  {t.coupon_not_user.replace("{name}", data.name)}{" "}
                   {t.coupon_not_user_action}
                 </Link>
               </div>

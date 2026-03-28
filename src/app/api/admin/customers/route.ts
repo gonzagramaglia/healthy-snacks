@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, username, purchases_count, is_verified } = body;
+    const { name, username, purchases_count, is_verified, purchase_dates } = body;
 
     const supabase = createAdminClient();
     const { data, error } = await supabase
@@ -60,6 +60,7 @@ export async function POST(request: NextRequest) {
           username: username.toLowerCase(),
           purchases_count: purchases_count || 0,
           is_verified: is_verified !== undefined ? is_verified : true,
+          purchase_dates: purchase_dates || [],
           last_updated: new Date().toISOString(),
         },
       ])

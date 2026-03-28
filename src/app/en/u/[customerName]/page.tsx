@@ -1,5 +1,5 @@
 import { MainContent } from "@/components/MainContent";
-import { hardcodedCustomers } from "@/lib/customers";
+import { CustomerPurchase } from "@/lib/customers";
 import { Metadata } from "next";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -15,24 +15,19 @@ export async function generateMetadata({
 
   let name = targetId.charAt(0).toUpperCase() + targetId.slice(1);
 
-  // First check hardcoded, then DB
-  if (hardcodedCustomers[targetId]) {
-    name = hardcodedCustomers[targetId].customerName;
-  } else {
-    try {
-      const supabase = createAdminClient();
-      const { data } = await supabase
-        .from("customers")
-        .select("name")
-        .eq("username", targetId)
-        .eq("is_verified", true)
-        .maybeSingle();
-      if (data?.name) {
-        name = data.name;
-      }
-    } catch {
-      // Ignore
+  try {
+    const supabase = createAdminClient();
+    const { data } = await supabase
+      .from("customers")
+      .select("name")
+      .eq("username", targetId)
+      .eq("is_verified", true)
+      .maybeSingle();
+    if (data?.name) {
+      name = data.name;
     }
+  } catch {
+    // Ignore
   }
 
   return {
@@ -49,39 +44,39 @@ export default async function CustomerPageEn({
   const { customerName } = await params;
   const targetId = customerName.toLowerCase();
 
-  let customer = hardcodedCustomers[targetId];
+  let customer: CustomerPurchase | null = null;
 
-  // If not found in hardcoded, look in Supabase database
-  if (!customer) {
-    try {
-      const supabase = createAdminClient();
-      const { data } = await supabase
-        .from("customers")
-        .select("id, name, is_verified, purchases_count, last_updated")
-        .eq("username", targetId)
-        .maybeSingle();
+  try {
+    const supabase = createAdminClient();
+    const { data } = await supabase
+      .from("customers")
+      .select("id, name, username, is_verified, purchases_count, last_updated, purchase_dates")
+      .eq("username", targetId)
+      .maybeSingle();
 
-      if (data && data.is_verified) {
-        customer = {
-          id: data.id,
-          customerName: data.name,
-          purchasesCount: data.purchases_count,
-          lastUpdated: data.last_updated,
-          isVerified: data.is_verified,
-        };
-      }
-    } catch {
-      // Ignore
+    if (data && data.is_verified) {
+      customer = {
+        id: data.id,
+        name: data.name,
+        username: data.username,
+        purchasesCount: data.purchases_count,
+        lastUpdated: data.last_updated,
+        isVerified: data.is_verified,
+        purchaseDates: data.purchase_dates,
+      };
     }
+  } catch {
+    // Ignore
   }
 
   // Fallback to empty state
   if (!customer) {
     customer = {
       id: "new",
-      customerName:
+      name:
         customerName.charAt(0).toUpperCase() +
         customerName.slice(1).toLowerCase(),
+      username: targetId,
       purchasesCount: 0,
       lastUpdated: new Date().toISOString(),
     };
