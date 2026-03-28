@@ -18,13 +18,17 @@ export function CustomerCoupon({
   const totalSlots = 10;
   const progress = Math.min(data.purchasesCount, totalSlots);
   const isFull = progress >= totalSlots;
-  const today = new Date().toLocaleDateString("es-AR", {
-    day: "numeric",
-    month: "numeric",
-  });
 
   const handleSlotClick = (i: number) => {
-    if (i <= progress) {
+    // If it's a future slot (next purchase), we scroll to the builder
+    if (i >= progress) {
+      const el = document.getElementById("mix-builder");
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth" });
+      }
+    }
+    
+    if (i < progress) {
       setActiveSlot(i);
       setTimeout(() => setActiveSlot(null), 1500);
     }
@@ -72,7 +76,7 @@ export function CustomerCoupon({
                   ),
                 )}
               </p>
-              <div className="mt-2">
+              <div className="mt-2 text-center md:text-left">
                 <Link
                   href={lang === "en" ? "/en/u/" : "/u/"}
                   className="text-[10px] md:text-xs text-muted-foreground/30 hover:text-muted-foreground/60 transition-colors hover:underline"
@@ -86,65 +90,74 @@ export function CustomerCoupon({
 
           <div className="flex-1 w-full max-w-md">
             <div className="grid grid-cols-5 gap-3">
-              {Array.from({ length: totalSlots }).map((_, i) => (
-                <div
-                  key={i}
-                  onClick={() => handleSlotClick(i)}
-                  className={`
-                                        aspect-square rounded-xl md:rounded-2xl border-2 flex items-center justify-center relative transition-all duration-300 group/slot cursor-pointer
-                                        ${
-                                          i < progress
-                                            ? "bg-primary border-primary text-primary-foreground shadow-lg shadow-primary/20"
-                                            : "border-dashed border-muted-foreground/30 bg-muted/50"
-                                        }
-                                        ${i === progress && !isFull ? "animate-pulse border-primary/50" : ""}
-                                    `}
-                >
-                  {i < progress ? (
-                    <div className="flex items-center justify-center">
-                      <Check
-                        className={`w-5 h-5 md:w-6 md:h-6 stroke-[3px] group-hover/slot:hidden ${activeSlot === i ? "hidden" : "block"}`}
-                      />
-                      <span
-                        className={`hidden group-hover/slot:block ${activeSlot === i ? "!block" : ""} text-[10px] md:text-sm font-bold tracking-tight animate-in fade-in zoom-in duration-200`}
-                      >
-                        {data.purchaseDates?.[i] || "Ok"}
-                      </span>
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-center">
-                      {i === progress && !isFull ? (
-                        <>
-                          <span
-                            className={`font-bold text-sm md:text-base transition-all duration-300 text-primary animate-pulse scale-110 group-hover/slot:opacity-0 ${activeSlot === i ? "opacity-0" : "opacity-100"}`}
-                          >
-                            {i + 1}
-                          </span>
-                          <span
-                            className={`absolute inset-0 flex items-center justify-center transition-all duration-300 opacity-0 group-hover/slot:opacity-100 ${activeSlot === i ? "!opacity-100" : ""} text-[10px] md:text-sm font-bold tracking-tight`}
-                          >
-                            {today}
-                          </span>
-                        </>
+              {Array.from({ length: totalSlots }).map((_, i) => {
+                const isUnlocked = i < progress;
+                const isNext = i === progress && !isFull;
+                const dateValue = data.purchaseDates?.[i] || "";
+                const hasDate = dateValue.trim() !== "";
+                
+                return (
+                  <div
+                    key={i}
+                    onClick={() => handleSlotClick(i)}
+                    className={`
+                      aspect-square rounded-xl md:rounded-2xl border-2 flex items-center justify-center relative transition-all duration-300 group/slot cursor-pointer
+                      ${isUnlocked
+                        ? "bg-primary border-primary text-primary-foreground shadow-lg shadow-primary/20"
+                        : "border-dashed border-muted-foreground/30 bg-muted/50"
+                      }
+                      ${isNext ? "animate-pulse border-primary/50 ring-4 ring-primary/5" : ""}
+                    `}
+                  >
+                    <div className="flex items-center justify-center w-full h-full relative">
+                      {isUnlocked ? (
+                         <div className="relative w-full h-full flex items-center justify-center">
+                            {/* Checkmark hidden on hover if date exists */}
+                            <Check
+                              className={`
+                                w-5 h-5 md:w-6 md:h-6 stroke-[3px] transition-opacity duration-300
+                                ${hasDate ? "group-hover/slot:opacity-0" : "opacity-100"}
+                                ${activeSlot === i ? "opacity-0" : ""}
+                              `}
+                            />
+                            {/* Date shown on hover or if slot is active */}
+                            <span
+                              className={`
+                                absolute inset-0 flex items-center justify-center text-[10px] md:text-sm font-black tracking-tighter transition-all duration-300
+                                ${hasDate ? "opacity-0 group-hover/slot:opacity-100 group-hover/slot:scale-110" : "hidden"}
+                                ${activeSlot === i ? "!opacity-100 !scale-110" : ""}
+                              `}
+                            >
+                              {dateValue}
+                            </span>
+                         </div>
                       ) : (
-                        <span className="text-muted-foreground/30 font-bold text-sm md:text-base">
-                          {i + 1}
-                        </span>
+                         <div className="flex items-center justify-center relative w-full h-full">
+                           <span className={`text-sm md:text-base font-black transition-opacity duration-300 ${isNext ? "text-primary opacity-60 group-hover/slot:opacity-0" : "text-muted-foreground/20"}`}>
+                             {i + 1}
+                           </span>
+                           {isNext && (
+                              <span className="absolute inset-0 flex items-center justify-center text-[9px] md:text-xs font-black uppercase tracking-widest text-primary opacity-0 group-hover/slot:opacity-100 transition-opacity">
+                                 {lang === "es" ? "NUEVO" : "NEW"}
+                              </span>
+                           )}
+                         </div>
                       )}
                     </div>
-                  )}
 
-                  {i === 9 && (
-                    <div className="absolute -top-2 -right-2 bg-yellow-400 text-black text-[8px] md:text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-sm">
-                      FREE
-                    </div>
-                  )}
-                </div>
-              ))}
+                    {/* FREE badge on Slot 10 */}
+                    {i === 9 && (
+                      <div className="absolute -top-2 -right-2 bg-yellow-400 text-black text-[7px] md:text-[9px] font-black px-1.5 py-0.5 rounded-full shadow-md border border-white dark:border-zinc-900">
+                        FREE
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
             <div className="mt-6 text-center">
               <p
-                className={`text-sm font-bold uppercase tracking-tight ${isFull ? "text-green-500 animate-bounce" : "text-primary"}`}
+                className={`text-xs md:text-sm font-black uppercase tracking-tighter ${isFull ? "text-green-500 animate-bounce" : "text-primary opacity-80"}`}
               >
                 {isFull
                   ? t.coupon_status_full

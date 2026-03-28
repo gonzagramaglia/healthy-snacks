@@ -171,6 +171,36 @@ export const dictionary = {
     trust_slogan: "Energía que\nte acompaña en cada paso",
     trust_sub:
       "Snacks ricos y prácticos para rendir en la facu, el trabajo,\n¡o donde pinten las pilas!",
+
+    // Admin Dashboard
+    admin: {
+      title: "Panel de Control",
+      welcome: "Bienvenido de nuevo,",
+      logout: "Cerrar Sesión",
+      discount_codes: "Códigos de Descuento",
+      customer_benefits: "Gestión de Beneficios",
+      manage_coupons: "Creá y gestioná cupones promocionales (ej: {code})",
+      manage_loyalty: "Fidelizá a tus clientes gestionando el programa de puntos, verificaciones y tarjetas de compras.",
+      manage: "Gestionar",
+      configure: "Configurar Beneficios",
+      back: "Atrás",
+      admin_panel_link: "Panel Admin",
+      new_code: "Nuevo Código",
+      new_customer: "Nuevo Cliente",
+      total_codes: "Total Códigos",
+      active_codes: "Activos",
+      total_usage: "Uso Total",
+      customers: "Clientes",
+      verified: "Verificados",
+      completed: "Completas",
+      list_title: "Listado",
+      no_results: "Nada por acá...",
+      save: "Guardar",
+      save_changes: "Guardar Cambios",
+      cancel: "Cancelar",
+      edit: "Editar",
+      delete: "Eliminar",
+    }
   },
   en: {
     // Header & Footer
@@ -338,5 +368,35 @@ export const dictionary = {
     trust_slogan: "Energy that\naccompanies you at every step",
     trust_sub:
       "Tasty and practical snacks to perform at university, work,\nor wherever you want!",
+
+    // Admin Dashboard
+    admin: {
+      title: "Admin Dashboard",
+      welcome: "Welcome back,",
+      logout: "Logout",
+      discount_codes: "Discount Codes",
+      customer_benefits: "Customer Loyalty",
+      manage_coupons: "Create and manage promotional coupons (ex: {code})",
+      manage_loyalty: "Manage customer loyalty program, verifications, and purchase cards.",
+      manage: "Manage",
+      configure: "Configure Benefits",
+      back: "Back",
+      admin_panel_link: "Admin Panel",
+      new_code: "New Code",
+      new_customer: "New Customer",
+      total_codes: "Total Codes",
+      active_codes: "Active",
+      total_usage: "Total Usage",
+      customers: "Customers",
+      verified: "Verified",
+      completed: "Completed",
+      list_title: "List",
+      no_results: "Nothing here...",
+      save: "Save",
+      save_changes: "Save Changes",
+      cancel: "Cancel",
+      edit: "Edit",
+      delete: "Delete",
+    }
   },
 };
