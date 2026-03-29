@@ -127,6 +127,42 @@ export async function POST(request: NextRequest) {
       return sum + up * q;
     }, 0);
 
+    // 1. Calcular cuántos stickers corresponden (Lógica: Promos no suman)
+    // Si compra 6, y 5 son promo, solo suma 1. 
+    // Asumimos que cada 5 unidades es una promo que NO suma stickers adicionales.
+    const totalItemsQty = (items || []).reduce(
+      (sum, it) => sum + (Number(it.quantity) || 0),
+      0,
+    );
+    
+    // Calculamos los stickers elegibles:
+    // Restamos paquetes de 5 (promos) de la cantidad total.
+    // Ejemplo: 4 items -> 4 stickers. 6 items -> 1 sticker (6 - 5). 11 items -> 1 sticker (11 - 10).
+    const promosCount = Math.floor(totalItemsQty / 5);
+    const eligibleStamps = Math.max(0, totalItemsQty - (promosCount * 5));
+
+    console.log(`Cálculo de lealtad: Total ${totalItemsQty}, Promos ${promosCount}, Stickers elegibles: ${eligibleStamps}`);
+
+    // 2. Persistir el pedido en Supabase PRIMERO
+    let savedOrderId: string | undefined = undefined;
+    try {
+      savedOrderId = await saveOrder({
+        name,
+        email,
+        phone: phone ?? "",
+        items: items as unknown as OrderItem[],
+        deliveryOption,
+        deliveryAddress,
+        totalPrice: totalWithDiscount,
+        totalMixQty: totalItemsQty,
+        paymentMethod: "mercadopago",
+        discountCode: appliedDiscountCode,
+        discountAmount: appliedDiscountAmount,
+      });
+    } catch (err) {
+      console.error("Error saving order before creating preference:", err);
+    }
+
     const preferenceData: PreferenceData = {
       items: preferenceItems,
       back_urls: {
@@ -134,13 +170,13 @@ export async function POST(request: NextRequest) {
         failure: `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/failure`,
         pending: `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/pending`,
       },
-      // URL donde Mercado Pago enviará las notificaciones (webhooks)
-      // Asegúrate de configurar NEXT_PUBLIC_BASE_URL en el entorno.
       notification_url: `${process.env.NEXT_PUBLIC_BASE_URL}/api/webhooks/mercadopago`,
       auto_return: "approved",
       statement_descriptor: "MOOVIMIENTO",
       locale: "es-AR",
       external_reference: JSON.stringify({
+        orderId: savedOrderId,
+        eligibleStamps, // Pasamos el cálculo al webhook
         deliveryOption,
         deliveryAddress,
         name,
@@ -162,40 +198,19 @@ export async function POST(request: NextRequest) {
     });
 
     console.log("Preference created:", response.id);
-    console.log("Init point:", response.init_point);
-
-    // Persistir el pedido en Supabase para que los pedidos web queden registrados
-    let savedOrderId: string | undefined = undefined;
-    try {
-      // Calcular totales
-      const totalMixQty = (items || []).reduce(
-        (sum, it) => sum + (Number(it.quantity) || 0),
-        0,
-      );
-      const totalPrice = (preferenceData.items || []).reduce((sum, it) => {
-        const item = it as { unit_price?: number; quantity?: number };
-        const up = Number(item.unit_price ?? 0) || 0;
-        const q = Number(item.quantity ?? 0) || 0;
-        return sum + up * q;
-      }, 0);
-
-      savedOrderId = await saveOrder({
-        name,
-        email,
-        phone: phone ?? "",
-        items: items as unknown as OrderItem[],
-        deliveryOption,
-        deliveryAddress,
-        totalPrice,
-        totalMixQty,
-        paymentMethod: "mercadopago",
-        paymentLink: response.init_point,
-        discountCode: appliedDiscountCode,
-        discountAmount: appliedDiscountAmount,
-      });
-    } catch (err) {
-      console.error("Error saving order after creating preference:", err);
-      // No interrumpimos la respuesta al cliente; la preferencia ya fue creada.
+    
+    // Actualizar la orden con el link de pago si ya la teníamos
+    if (savedOrderId && response.init_point) {
+      try {
+        const { createAdminClient } = await import("@/lib/supabase/admin");
+        const supabase = createAdminClient();
+        await supabase
+          .from("orders")
+          .update({ payment_link: response.init_point })
+          .eq("id", savedOrderId);
+      } catch (e) {
+        console.error("Error updating order with payment link:", e);
+      }
     }
 
     // Enviar automáticamente el email con el link de pago (servidor-side)
