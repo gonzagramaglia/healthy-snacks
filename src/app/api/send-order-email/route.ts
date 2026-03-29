@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 import { saveOrder, OrderItem } from "@/lib/orders";
+import { createAdminClient } from "@/lib/supabase/admin";
+import crypto from "crypto";
 
 interface EmailBody {
+  orderId?: string | null;
   name?: string;
   email: string;
   phone: string;
@@ -22,6 +25,7 @@ export async function POST(request: NextRequest) {
     console.log("Iniciando envío de email...");
     const body = (await request.json()) as EmailBody;
     const {
+      orderId,
       name,
       email,
       phone,
@@ -341,6 +345,41 @@ export async function POST(request: NextRequest) {
         : deliveryOption === "sagrada"
           ? "Punto de encuentro (Envío gratuito)"
           : `Córdoba (${currency.format(1000)})`;
+    
+    // Auto-create customer if doesn't exist
+    const supabase = createAdminClient();
+    let verificationToken = "";
+    let customerUsername = "";
+    
+    try {
+      const { data: existingCustomer } = await supabase
+        .from("customers")
+        .select("*")
+        .eq("email", email)
+        .maybeSingle();
+        
+      if (!existingCustomer) {
+        console.log(`Creando cliente automático inicial para ${email}...`);
+        customerUsername = email.split("@")[0].toLowerCase().replace(/[^a-z0-9]/g, "");
+        verificationToken = crypto.randomBytes(32).toString("hex");
+        
+        await supabase.from("customers").insert({
+          name: name || customerUsername,
+          email: email,
+          username: customerUsername,
+          purchases_count: 0,
+          purchase_dates: Array(10).fill(""),
+          is_verified: false,
+          verification_token: verificationToken,
+          last_updated: new Date().toISOString(),
+        });
+      } else {
+        customerUsername = existingCustomer.username;
+        verificationToken = existingCustomer.verification_token;
+      }
+    } catch (err) {
+      console.error("Error ensuring customer exists:", err);
+    }
 
     console.log("Enviando email...");
 
@@ -352,25 +391,28 @@ export async function POST(request: NextRequest) {
           : `🎉 ¡${name ? name + ", " : ""}tu pedido de Frutos Secos está casi listo!`;
 
       // Persist order to orders datastore (Supabase) and generate pay token
-      let savedOrderId: string | null = null;
-      try {
-        const id = await saveOrder({
-          name,
-          email,
-          phone,
-          items,
-          deliveryOption,
-          deliveryAddress,
-          totalPrice,
-          totalMixQty,
-          paymentMethod,
-          paymentLink,
-          discountCode,
-          discountAmount,
-        });
-        savedOrderId = id;
-      } catch (err) {
-        console.error("Error persisting order:", err);
+      // Only if not already saved (passed via orderId)
+      let savedOrderId: string | null = orderId || null;
+      if (!savedOrderId) {
+        try {
+          const id = await saveOrder({
+            name,
+            email,
+            phone,
+            items,
+            deliveryOption,
+            deliveryAddress,
+            totalPrice,
+            totalMixQty,
+            paymentMethod: paymentMethod || "unknown",
+            paymentLink,
+            discountCode,
+            discountAmount,
+          });
+          savedOrderId = id;
+        } catch (err) {
+          console.error("Error persisting order:", err);
+        }
       }
 
       // If no direct paymentLink provided, create a pay token so the email can include /pay/{token}
@@ -384,15 +426,15 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      // Build action block (WhatsApp + optional Mercado Pago button) with matching heights and spacing
-      // Use an emoji for the WhatsApp button to avoid image-blocking in email clients
+      // Build action block (WhatsApp + optional Mercado Pago button)
+      // Use block display and padding for better mobile compatibility in email clients
       const whatsappButton = `
-        <a href="https://wa.me/5493513239624" style="display:inline-block; height:48px; line-height:48px; background-color:#25d366; color:white; padding:0 14px; text-decoration:none; border-radius:8px; font-weight:700; vertical-align:middle;">
-          <span style="display:inline-block; vertical-align:middle; font-size:18px; margin-right:8px;">📱</span>
-          <span style="display:inline-block; vertical-align:middle; line-height:1;">Coordinar ahora por WhatsApp</span>
+        <a href="https://wa.me/5493513239624" style="display:block; padding:12px 20px; background-color:#25d366; color:#ffffff; text-decoration:none; border-radius:8px; font-weight:700; text-align:center; margin:8px auto; max-width:280px;">
+          <span style="font-size:18px; margin-right:8px; vertical-align:middle;">📱</span>
+          <span style="vertical-align:middle;">Coordinar por WhatsApp</span>
         </a>
       `;
-
+      
       // If we have a direct paymentLink prefer it; otherwise use pay token link that will create/redirect on-demand
       const payHref = paymentLink
         ? paymentLink
@@ -401,17 +443,14 @@ export async function POST(request: NextRequest) {
           : "";
       const payButton = payHref
         ? `
-        <a href="${payHref}" style="display:inline-block; height:48px; line-height:48px; background-color:#fbbf24; color:#000; padding:0 14px; text-decoration:none; border-radius:8px; font-weight:700; vertical-align:middle;">
-          <span style="display:inline-block; vertical-align:middle; line-height:1;">💳 Pagar ahora con Mercado Pago</span>
+        <a href="${payHref}" style="display:block; padding:12px 20px; background-color:#fbbf24; color:#000000; text-decoration:none; border-radius:8px; font-weight:700; text-align:center; margin:8px auto; max-width:280px;">
+          <span style="font-size:18px; margin-right:8px; vertical-align:middle;">💳</span>
+          <span style="vertical-align:middle;">Pagar con Mercado Pago</span>
         </a>
       `
         : "";
-
-      // Use a simple spacer element between buttons (more compatible than flex gap in some email clients)
-      const spacer = payButton
-        ? '<span style="display:inline-block; width:10px; height:1px;"></span>'
-        : "";
-      const buttonsRow = `<div style="text-align:center; margin-top:16px;">${whatsappButton}${spacer}${payButton}</div>`;
+      
+      const buttonsRow = `<div style="text-align:center; margin-top:16px;">${whatsappButton}${payButton}</div>`;
 
       // Small hint shown below buttons when a Mercado Pago button is available
       const mpNote = payButton
@@ -436,6 +475,22 @@ export async function POST(request: NextRequest) {
 
       const actionBlock =
         paymentMethod === "efectivo" ? efectivoBlock : nonEfectivoBlock;
+
+      // Add a loyalty card preview or verification link
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "";
+      const verificationLink = (baseUrl && verificationToken) 
+        ? `${baseUrl.replace(/\/$/, "")}/api/users/confirm?token=${verificationToken}`
+        : "";
+      
+      const loyaltyBlock = verificationLink ? `
+        <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; padding: 16px; margin: 20px 0; border-radius: 8px;">
+          <p style="margin: 0 0 8px 0; color: #166534;"><strong>⚡ ¡Conseguí stickers gratis!</strong></p>
+          <p style="margin: 0 0 12px 0; font-size: 14px; color: #166534;">Por cada mix que compres, acumulás stickers para canjearlos por envases gratis.</p>
+          <a href="${verificationLink}" style="display:inline-block; padding:10px 16px; background-color:#16a34a; color:white; text-decoration:none; border-radius:6px; font-weight:600; font-size:14px;">
+            Verificar mi cuenta y ver mis stickers
+          </a>
+        </div>
+      ` : "";
 
       result = await resend.emails.send({
         from: "Gonza de Moovimiento <gonza@moovimiento.com>",
@@ -492,6 +547,8 @@ export async function POST(request: NextRequest) {
                 <td style="padding: 12px; text-align: right; vertical-align: middle; white-space:nowrap; font-size: 20px; font-weight: bold;">${currency.format(totalPrice)}</td>
               </tr>
             </table>
+            
+            ${loyaltyBlock}
 
             ${actionBlock}
             <p style="margin-top: 30px; font-size: 14px; color: #666;">
@@ -499,7 +556,7 @@ export async function POST(request: NextRequest) {
             </p>
             
             <p style="margin-top: 20px; font-size: 14px; color: #666;">
-              ¿Tenés alguna duda? Escribime a <a href="mailto:gonza@moovimiento.com">gonza@moovimiento.com</a> o visitá nuestras <a href="https://www.moovimiento.com/#faq">Preguntas Frecuentes</a>
+              ¿Tenés alguna duda? Escribinos a <a href="mailto:gonza@moovimiento.com">gonza@moovimiento.com</a> o visitá nuestras <a href="https://www.moovimiento.com/#faq">Preguntas Frecuentes</a>
             </p>
 
             <p style="margin-top: 20px; font-size: 14px; color: #666;">

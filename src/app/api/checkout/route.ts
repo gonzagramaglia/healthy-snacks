@@ -243,6 +243,7 @@ export async function POST(request: NextRequest) {
         }
 
         const emailBody = {
+          orderId: savedOrderId,
           name,
           email,
           phone: phone ?? "",

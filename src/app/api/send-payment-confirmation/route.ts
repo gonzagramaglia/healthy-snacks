@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
                 <div style="text-align: center; margin: 30px 0;">
                   <p style="margin-bottom: 12px; font-size: 16px;">
                     <strong>¿Querés tomar la iniciativa?</strong><br>
-                    Hablame directamente por WhatsApp:
+                    Hablanos directamente por WhatsApp:
                   </p>
                   <a href="${whatsappLink}" class="whatsapp-btn" style="display:inline-flex; align-items:center; gap:8px;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
                 </div>
 
                 <p style="margin-top: 30px; font-size: 14px; color: #666;">
-                  ¿Tenés alguna duda? Escribime a <a href="mailto:gonza@moovimiento.com">gonza@moovimiento.com</a> o visitá nuestras <a href="https://www.moovimiento.com/#faq">Preguntas Frecuentes</a>
+                  ¿Tenés alguna duda? Escribinos a <a href="mailto:gonza@moovimiento.com">gonza@moovimiento.com</a> o visitá nuestras <a href="https://www.moovimiento.com/#faq">Preguntas Frecuentes</a>
                 </p>
 
                 <p style="margin-top: 20px; font-size: 14px; color: #666;">

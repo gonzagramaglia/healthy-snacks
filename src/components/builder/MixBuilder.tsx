@@ -134,6 +134,7 @@ export function MixBuilder({ lang = "es" }: { lang?: Language }) {
   } | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_discountError, setDiscountError] = useState<string>("");
+  const [isLoadingCheckout, setIsLoadingCheckout] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
   // removed selectedPaymentMethod state — the web should not show the extra 'Total a pagar' row
@@ -1317,6 +1318,7 @@ export function MixBuilder({ lang = "es" }: { lang?: Language }) {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
             <Button
               disabled={
+                isLoadingCheckout ||
                 cartItems.length === 0 ||
                 totalMixQty < 1 ||
                 !deliveryAddress.trim() ||
@@ -1333,6 +1335,8 @@ export function MixBuilder({ lang = "es" }: { lang?: Language }) {
                   : ""
               }
               onClick={async () => {
+                if (isLoadingCheckout) return;
+                setIsLoadingCheckout(true);
                 // proceed with cash flow
                 try {
                   // Preparar items para el email
@@ -1461,14 +1465,24 @@ export function MixBuilder({ lang = "es" }: { lang?: Language }) {
                       "Hubo un error: Por favor intente nuevamente más tarde",
                     );
                   }
+                } finally {
+                  setIsLoadingCheckout(false);
                 }
               }}
               className="bg-gray-500 hover:bg-gray-600 text-white border-gray-500"
             >
-              {t.pay_cash}
+              {isLoadingCheckout ? (
+                <span className="flex items-center gap-2">
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  {t.pay_cash}...
+                </span>
+              ) : (
+                t.pay_cash
+              )}
             </Button>
             <Button
               disabled={
+                isLoadingCheckout ||
                 cartItems.length === 0 ||
                 totalMixQty < 1 ||
                 !deliveryAddress.trim() ||
@@ -1485,6 +1499,8 @@ export function MixBuilder({ lang = "es" }: { lang?: Language }) {
                   : ""
               }
               onClick={async () => {
+                if (isLoadingCheckout) return;
+                setIsLoadingCheckout(true);
                 // proceed with Mercado Pago flow
                 try {
                   // Calcular precio con promos aplicadas correctamente
@@ -1561,30 +1577,12 @@ export function MixBuilder({ lang = "es" }: { lang?: Language }) {
                     setErrorMessage(
                       "Hubo un error: Por favor intente nuevamente más tarde",
                     );
+                    setIsLoadingCheckout(false);
                     return;
                   }
 
                   if (data.init_point) {
                     setErrorMessage(""); // Limpiar errores previos
-                    // Enviar email con resumen y link de pago
-                    await fetch("/api/send-order-email", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({
-                        name,
-                        email,
-                        phone,
-                        items: mixItems,
-                        deliveryOption,
-                        deliveryAddress,
-                        totalPrice: pricing.price,
-                        totalMixQty,
-                        paymentLink: data.init_point,
-                        discountCode: appliedDiscount?.code || null,
-                        discountAmount: pricing.discountAmount,
-                      }),
-                    });
-
                     // Redirigir a Mercado Pago con locale configurado
                     const checkoutUrl = new URL(data.init_point);
                     checkoutUrl.searchParams.set("locale", "es-AR");
@@ -1593,9 +1591,11 @@ export function MixBuilder({ lang = "es" }: { lang?: Language }) {
                     setErrorMessage(
                       "Hubo un error: Por favor intente nuevamente más tarde",
                     );
+                    setIsLoadingCheckout(false);
                   }
                 } catch (error) {
                   console.error("Error:", error);
+                  setIsLoadingCheckout(false);
 
                   // Detectar errores de red específicos
                   if (
