@@ -116,6 +116,26 @@ export async function POST(request: NextRequest) {
             }
 
             console.log(`Cupón actualizado para ${customer.name || email}`);
+            
+            // Enviar email de confirmación de pago (para cliente existente)
+            try {
+              const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "";
+              if (baseUrl) {
+                await fetch(`${baseUrl}/api/send-payment-confirmation`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    email: email,
+                    name: customer.name || metadata.name,
+                    phone: metadata.phone || "",
+                    deliveryAddress: metadata.deliveryAddress || "",
+                    deliveryOption: metadata.deliveryOption || "ciudad",
+                  }),
+                });
+              }
+            } catch (emailErr) {
+              console.error("Error sending payment confirmation for existing customer:", emailErr);
+            }
           } else {
             // --- NUEVA LÓGICA: CREACIÓN AUTOMÁTICA ---
             console.log(`Creando nuevo cliente para ${email}...`);
@@ -185,6 +205,26 @@ export async function POST(request: NextRequest) {
                 }
               } catch (emailErr) {
                 console.error("Error sending welcome email:", emailErr);
+              }
+
+              // Enviar TAMBIÉN el email de confirmación de pago (para nuevo cliente)
+              try {
+                const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "";
+                if (baseUrl) {
+                  await fetch(`${baseUrl}/api/send-payment-confirmation`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      email: email,
+                      name: newCustomer.name,
+                      phone: metadata.phone || "",
+                      deliveryAddress: metadata.deliveryAddress || "",
+                      deliveryOption: metadata.deliveryOption || "ciudad",
+                    }),
+                  });
+                }
+              } catch (emailErr) {
+                console.error("Error sending payment confirmation for new customer:", emailErr);
               }
             }
           }

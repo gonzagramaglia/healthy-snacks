@@ -1,406 +1,104 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { Language } from "@/lib/dictionary";
-import { User, ArrowRight, Mail, UserCircle } from "lucide-react";
+import { LogIn } from "lucide-react";
 import { toast } from "sonner";
+import { signInWithGoogle } from "@/lib/auth-actions";
 
 export function CustomerSearch({ lang }: { lang: Language }) {
-  const [showSurpriseInfo, setShowSurpriseInfo] = useState(false);
-  const surpriseInfoTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const [username, setUsername] = useState("");
-  const [showRegister, setShowRegister] = useState(false);
-  const [registerName, setRegisterName] = useState("");
-  const [registerUsername, setRegisterUsername] = useState("");
-  const [registerEmail, setRegisterEmail] = useState("");
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    const shouldOpenRegister = searchParams.get("register") === "1";
-    if (shouldOpenRegister) {
-      setShowRegister(true);
-    }
-  }, [searchParams]);
-
-  useEffect(() => {
-    return () => {
-      if (surpriseInfoTimerRef.current)
-        clearTimeout(surpriseInfoTimerRef.current);
-    };
-  }, []);
-
-  const handleSurpriseInfoClick = () => {
-    setShowSurpriseInfo(true);
-    if (surpriseInfoTimerRef.current)
-      clearTimeout(surpriseInfoTimerRef.current);
-    surpriseInfoTimerRef.current = setTimeout(() => {
-      setShowSurpriseInfo(false);
-    }, 3000);
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (username.trim()) {
-      const prefix = lang === "en" ? "/en/u/" : "/u/";
-      router.push(`${prefix}${username.trim().toLowerCase()}`);
-    }
-  };
-
-  const [isReserving, setIsReserving] = useState(false);
-
-  const handleRegisterSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (
-      !registerName.trim() ||
-      !registerUsername.trim() ||
-      !registerEmail.trim()
-    )
-      return;
-
-    setIsReserving(true);
+  const handleGoogleLogin = async () => {
+    setIsLoading(true);
     try {
-      const response = await fetch("/api/reserve-user", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: registerName,
-          username: registerUsername,
-          email: registerEmail,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        toast.error(data.error || "Ocurrió un error inesperado.");
-      } else {
-        toast.success(
-          lang === "es"
-            ? "¡Revisá tu correo para confirmar!"
-            : "Check your email to confirm!",
-        );
-        setShowRegister(false);
-        setRegisterName("");
-        setRegisterUsername("");
-        setRegisterEmail("");
-      }
-    } catch {
-      toast.error("Error al conectar con el servidor.");
-    } finally {
-      setIsReserving(false);
+      await signInWithGoogle(lang);
+    } catch (err) {
+      toast.error(lang === "es" ? "Error al iniciar sesión con Google" : "Error signing in with Google");
+      setIsLoading(false);
     }
   };
 
   return (
     <section className="mx-auto max-w-5xl px-6 pb-6 pt-2 md:pb-12 md:pt-4">
-      <div className="bg-gradient-to-br from-primary/5 to-primary/10 border-2 border-primary/20 rounded-3xl p-8 md:p-12 shadow-sm relative overflow-hidden text-left flex flex-col lg:flex-row items-stretch gap-6 lg:gap-8 group">
+      <div className="bg-gradient-to-br from-primary/5 to-primary/10 border-2 border-primary/20 rounded-3xl p-8 md:p-12 shadow-sm relative overflow-hidden text-left flex flex-col-reverse lg:flex-row items-center gap-6 lg:gap-12 group">
         {/* Decorative background element */}
         <div className="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-colors duration-500" />
 
-        <div className="relative z-10 flex-1 space-y-3">
-          <h3 className="text-2xl md:text-3xl font-bold tracking-tight text-center md:text-left">
+        <div className="relative z-10 w-full lg:w-[320px] bg-background/40 backdrop-blur-sm border border-primary/10 rounded-2xl p-6 space-y-4">
+           <div className="flex justify-between items-center border-b border-primary/10 pb-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                {lang === "es" ? "Cómo funciona" : "How it works"}
+              </span>
+           </div>
+           <p className="text-xs text-muted-foreground leading-relaxed">
+             {lang === "es" ? (
+               "🎟️ Cada compra suma pasos. Al llegar a 10, ¡tenés un Mix gratuito y una sorpresa! 🎁"
+             ) : (
+               "🎟️ Every purchase adds steps. Reach 10 and get a free Mix and a surprise! 🎁"
+             )}
+           </p>
+           <div className="grid grid-cols-5 gap-1.5 pt-1">
+             {Array.from({ length: 10 }).map((_, i) => (
+               <div
+                 key={i}
+                 className={`h-8 rounded-lg border text-[10px] flex items-center justify-center font-bold ${
+                   i < 7
+                     ? "bg-primary/20 border-primary/30 text-primary"
+                     : "border-dashed border-muted-foreground/30 text-muted-foreground/30 bg-muted/20"
+                 }`}
+               >
+                 {i === 9 ? "🎁" : i + 1}
+               </div>
+             ))}
+           </div>
+           <p className="text-[10px] text-center text-muted-foreground italic">
+             {lang === "es" ? "Ejemplo de progreso (7/10)" : "Progress example (7/10)"}
+           </p>
+        </div>
+
+        <div className="relative z-10 flex-1 space-y-4">
+          <h3 className="text-2xl md:text-4xl font-bold tracking-tight text-center md:text-left">
             {lang === "es" ? (
               <>
                 Beneficios para
-                <span className="block md:inline"> clientes habituales</span>
+                <span className="text-primary"> clientes habituales</span>
               </>
             ) : (
-              "Benefits for regular customers"
+              <>
+                Benefits for
+                <span className="text-primary"> regular customers</span>
+              </>
             )}
           </h3>
-          <p className="text-muted-foreground text-sm max-w-xl text-center md:text-left">
+          <p className="text-muted-foreground text-base max-w-xl text-center md:text-left">
             {lang === "es" ? (
-              <>
-                Ingresá tu usuario para ver tu progreso
-                <span className="block md:inline">
-                  {" "}
-                  hacia los próximos regalos
-                </span>
-              </>
+              "Iniciá sesión para ver tu progreso y canjear tus premios acumulados."
             ) : (
-              <>
-                Enter your username to see your progress
-                <span className="block md:inline">
-                  {" "}
-                  toward upcoming rewards
-                </span>
-              </>
+              "Sign in to see your progress and redeem your accumulated rewards."
             )}
           </p>
 
-          <div className="text-xs text-foreground/80 max-w-xl bg-background/60 border border-primary/15 rounded-xl px-3 py-3">
-            {lang === "es" ? (
-              <>
-                <p className="text-center md:text-left">
-                  <strong>
-                    🎟️ Cada compra de 1, 2, 3 o 4 Mixes suma pasos
-                  </strong>{" "}
-                  <span className="md:hidden">
-                    ¡Al llegar a la meta, vas a poder canjear tu cupón por 1 Mix
-                    gratuito!
-                  </span>
-                  <span className="hidden md:inline">
-                    ¡Al llegar a la meta (10), vas a poder canjear tu cupón por
-                    1 Mix gratuito y otra sorpresa! 🎁
-                  </span>
-                  <span className="relative hidden md:inline-flex align-middle ml-1 group/info select-none cursor-default">
-                    <span
-                      onClick={handleSurpriseInfoClick}
-                      className="inline-flex items-center justify-center w-4 h-4 rounded-full border border-primary/40 text-[10px] font-bold text-primary select-none cursor-default"
-                    >
-                      ?
-                    </span>
-                    <span
-                      className={`pointer-events-none absolute left-1/2 top-[calc(100%+6px)] -translate-x-1/2 z-20 w-64 rounded-md border border-primary/20 bg-background px-2 py-1.5 text-[11px] font-medium text-primary text-center shadow-md transition-opacity duration-150 select-none cursor-default ${showSurpriseInfo ? "opacity-100" : "opacity-0 group-hover/info:opacity-100"}`}
-                    >
-                      Puede incluir descuentos en próximas compras o en locales
-                      adheridos
-                    </span>
-                  </span>
-                </p>
-                {showRegister && (
-                  <div className="hidden md:block">
-                    <div className="bg-background/60 border border-primary/15 rounded-xl px-3 py-3 mt-4">
-                      <p className="text-[11px] text-muted-foreground font-bold mb-2 text-center md:text-left">
-                        {lang === "es"
-                          ? "Ejemplo de progreso (7/10):"
-                          : "Progress example (7/10):"}
-                      </p>
-                      <div className="grid grid-cols-10 gap-1.5">
-                        {Array.from({ length: 10 }).map((_, i) => (
-                          <div
-                            key={i}
-                            className={`h-6 rounded-md border text-[10px] flex items-center justify-center font-bold ${
-                              i < 7
-                                ? "bg-primary border-primary text-primary-foreground"
-                                : "border-dashed border-muted-foreground/30 text-muted-foreground/50 bg-muted/40"
-                            }`}
-                          >
-                            {i === 9 ? "🎁" : i + 1}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </>
-            ) : (
-              <>
-                <p className="text-center md:text-left">
-                  <strong>
-                    🎟️ Every purchase of 1, 2, 3, or 4 mixes adds steps
-                  </strong>
-                  <span className="md:hidden">
-                    . Once you hit the goal, you can redeem your coupon for 1
-                    free Mix!
-                  </span>
-                  <span className="hidden md:inline">
-                    . Once you hit the goal (10), you can redeem your coupon for
-                    1 free Mix and an extra surprise! 🎁
-                  </span>
-                  <span className="relative hidden md:inline-flex align-middle ml-1 group/info select-none cursor-default">
-                    <span
-                      onClick={handleSurpriseInfoClick}
-                      className="inline-flex items-center justify-center w-4 h-4 rounded-full border border-primary/40 text-[10px] font-bold text-primary select-none cursor-default"
-                    >
-                      ?
-                    </span>
-                    <span
-                      className={`pointer-events-none absolute left-1/2 top-[calc(100%+6px)] -translate-x-1/2 z-20 w-64 rounded-md border border-primary/20 bg-background px-2 py-1.5 text-[11px] font-medium text-primary text-center shadow-md transition-opacity duration-150 select-none cursor-default ${showSurpriseInfo ? "opacity-100" : "opacity-0 group-hover/info:opacity-100"}`}
-                    >
-                      It may include discounts for future purchases or partner
-                      stores
-                    </span>
-                  </span>
-                </p>
-                {showRegister && (
-                  <>
-                    <p className="text-[11px] text-muted-foreground font-bold mt-2 mb-2 text-center md:text-left">
-                      Progress example (7/10):
-                    </p>
-                    <div className="grid grid-cols-10 gap-1.5">
-                      {Array.from({ length: 10 }).map((_, i) => (
-                        <div
-                          key={i}
-                          className={`h-6 rounded-md border text-[10px] flex items-center justify-center font-bold ${
-                            i < 7
-                              ? "bg-primary border-primary text-primary-foreground"
-                              : "border-dashed border-muted-foreground/30 text-muted-foreground/50 bg-muted/40"
-                          }`}
-                        >
-                          {i === 9 ? "🎁" : i + 1}
-                        </div>
-                      ))}
-                    </div>
-                  </>
-                )}
-              </>
-            )}
+          <div className="flex flex-col md:flex-row items-center gap-4 pt-2">
+            <button
+              onClick={handleGoogleLogin}
+              disabled={isLoading}
+              className="group relative flex items-center gap-3 bg-white text-black font-semibold px-8 py-4 rounded-2xl hover:scale-[1.02] active:scale-95 transition-all duration-300 shadow-xl shadow-black/5 border border-black/10 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <svg viewBox="0 0 24 24" className="w-5 h-5" xmlns="http://www.w3.org/2000/svg">
+                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-1 .67-2.28 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                <path d="M5.84 14.09c-.22-.67-.35-1.39-.35-2.09s.13-1.42.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.66l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+              </svg>
+              {isLoading ? (
+                lang === "es" ? "Cargando..." : "Loading..."
+              ) : (
+                lang === "es" ? "Ingresar con Google" : "Sign in with Google"
+              )}
+            </button>
           </div>
         </div>
-
-        {!showRegister ? (
-          <form
-            onSubmit={handleSubmit}
-            className="relative z-10 w-full lg:w-[360px] space-y-3 mt-1"
-          >
-            <div className="flex items-center gap-3">
-              <div className="relative flex-1">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2">
-                  <User className="w-5 h-5 text-muted-foreground/50 transition-colors group-focus-within:text-primary" />
-                </div>
-                <input
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder={
-                    lang === "es" ? "Tu usuario..." : "Your username..."
-                  }
-                  className="w-full pl-12 pr-4 py-3.5 rounded-2xl bg-card border-2 border-primary/10 focus:border-primary/50 focus:outline-none transition-all duration-300 shadow-inner"
-                />
-              </div>
-              <button
-                type="submit"
-                title={lang === "es" ? "Ver beneficios" : "See benefits"}
-                className="bg-primary text-primary-foreground p-3.5 rounded-2xl hover:scale-105 active:scale-95 transition-all duration-300 shadow-xl shadow-primary/20 cursor-pointer"
-              >
-                <ArrowRight className="w-6 h-6 stroke-[2.5px]" />
-              </button>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => {
-                const prefix = lang === "en" ? "/en/u/" : "/u/";
-                router.push(`${prefix}?register=1`);
-                setShowRegister(true);
-              }}
-              className="text-xs text-primary hover:underline cursor-pointer w-full text-center md:text-left md:ml-4"
-            >
-              {lang === "es"
-                ? "¿Todavía no tenés usuario? Crealo ahora"
-                : "Don't have a user yet? Create it now"}
-            </button>
-          </form>
-        ) : (
-          <form
-            onSubmit={handleRegisterSubmit}
-            className="relative z-10 w-full lg:w-[360px] space-y-3 self-center lg:self-center"
-          >
-            <div className="relative">
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                <UserCircle
-                  className="w-5 h-5 text-muted-foreground/50 transition-colors"
-                  id="register-name-icon"
-                />
-              </div>
-              <input
-                type="text"
-                value={registerName}
-                onChange={(e) => setRegisterName(e.target.value)}
-                placeholder={lang === "es" ? "Nombre" : "Name"}
-                className="w-full pl-12 pr-4 py-3 rounded-2xl bg-card border-2 border-primary/10 focus:border-primary/50 focus:outline-none transition-all duration-300 shadow-inner"
-                onFocus={() => {
-                  const icon = document.getElementById("register-name-icon");
-                  if (icon) icon.classList.add("text-primary");
-                }}
-                onBlur={() => {
-                  const icon = document.getElementById("register-name-icon");
-                  if (icon) icon.classList.remove("text-primary");
-                }}
-              />
-            </div>
-            <div className="relative">
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                <User
-                  className="w-5 h-5 text-muted-foreground/50 transition-colors"
-                  id="register-username-icon"
-                />
-              </div>
-              <input
-                type="text"
-                value={registerUsername}
-                onChange={(e) => setRegisterUsername(e.target.value)}
-                placeholder={
-                  lang === "es" ? "Usuario a reservar" : "Username to reserve"
-                }
-                className="w-full pl-12 pr-4 py-3 rounded-2xl bg-card border-2 border-primary/10 focus:border-primary/50 focus:outline-none transition-all duration-300 shadow-inner"
-                onFocus={() => {
-                  const icon = document.getElementById(
-                    "register-username-icon",
-                  );
-                  if (icon) icon.classList.add("text-primary");
-                }}
-                onBlur={() => {
-                  const icon = document.getElementById(
-                    "register-username-icon",
-                  );
-                  if (icon) icon.classList.remove("text-primary");
-                }}
-              />
-            </div>
-            <div className="relative">
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                <Mail
-                  className="w-4 h-4 text-muted-foreground/50 transition-colors"
-                  id="register-email-icon"
-                />
-              </div>
-              <input
-                type="email"
-                value={registerEmail}
-                onChange={(e) => setRegisterEmail(e.target.value)}
-                placeholder={lang === "es" ? "Mail" : "Email"}
-                className="w-full pl-12 pr-4 py-3 rounded-2xl bg-card border-2 border-primary/10 focus:border-primary/50 focus:outline-none transition-all duration-300 shadow-inner"
-                onFocus={() => {
-                  const icon = document.getElementById("register-email-icon");
-                  if (icon) icon.classList.add("text-primary");
-                }}
-                onBlur={() => {
-                  const icon = document.getElementById("register-email-icon");
-                  if (icon) icon.classList.remove("text-primary");
-                }}
-              />
-            </div>
-
-            <div className="flex flex-col md:flex-row items-center justify-center gap-2">
-              <button
-                type="submit"
-                disabled={
-                  !registerName.trim() ||
-                  !registerUsername.trim() ||
-                  !registerEmail.trim() ||
-                  isReserving
-                }
-                className={`px-4 py-2.5 rounded-xl transition-all duration-300 ${
-                  !registerName.trim() ||
-                  !registerUsername.trim() ||
-                  !registerEmail.trim() ||
-                  isReserving
-                    ? "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
-                    : "bg-primary text-primary-foreground hover:scale-[1.02] active:scale-95 cursor-pointer"
-                }`}
-              >
-                {isReserving
-                  ? lang === "es"
-                    ? "Enviando..."
-                    : "Sending..."
-                  : lang === "es"
-                    ? "Reservar usuario"
-                    : "Reserve username"}
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowRegister(false)}
-                className="text-xs text-muted-foreground hover:underline cursor-pointer"
-              >
-                {lang === "es" ? "Ya tengo usuario" : "I already have a user"}
-              </button>
-            </div>
-          </form>
-        )}
       </div>
     </section>
   );
