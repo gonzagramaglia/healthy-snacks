@@ -47,6 +47,18 @@ If you created a brand new Supabase project:
 
 ---
 
+## 🔐 Admin Panel
+
+The administration interface is accessible at `/admin`. It allows you to:
+
+-   **🎁 Loyalty Management**: Generate random gift codes to add steps to customer loyalty cards.
+-   **🎫 Discount Codes**: Create and manage percentage or fixed discount coupons (e.g., `OFF10`).
+-   **👤 Customer Insights**: View and edit customer progress, verification status, and purchase history.
+
+To access, you need the `ADMIN_PASSWORD` (configured during deployment).
+
+---
+
 ## 🕹 Usage
 
 ### 🥣 Build a Mix

@@ -5,9 +5,19 @@ import { Language, dictionary } from "@/lib/dictionary";
 import { ArrowLeft, Plus, RefreshCw, Key, CheckCircle2, Circle } from "lucide-react";
 import Link from "next/link";
 
+interface LoyaltyCode {
+  id: string;
+  code: string;
+  steps: number;
+  is_used: boolean;
+  used_by_customer_id: string | null;
+  used_at: string | null;
+  created_at: string;
+}
+
 export function LoyaltyCodes({ lang }: { lang: Language }) {
   const t = dictionary[lang].admin;
-  const [codes, setCodes] = useState<any[]>([]);
+  const [codes, setCodes] = useState<LoyaltyCode[]>([]);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [steps, setSteps] = useState(1);

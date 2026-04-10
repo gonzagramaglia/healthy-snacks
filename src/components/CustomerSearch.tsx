@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Language } from "@/lib/dictionary";
-import { LogIn } from "lucide-react";
 import { toast } from "sonner";
 import { signInWithGoogle } from "@/lib/auth-actions";
 
@@ -13,7 +12,7 @@ export function CustomerSearch({ lang }: { lang: Language }) {
     setIsLoading(true);
     try {
       await signInWithGoogle(lang);
-    } catch (err) {
+    } catch {
       toast.error(lang === "es" ? "Error al iniciar sesión con Google" : "Error signing in with Google");
       setIsLoading(false);
     }

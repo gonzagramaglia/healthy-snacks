@@ -146,7 +146,7 @@ export function CustomerBenefits({ lang }: CustomerBenefitsProps) {
       await deleteCustomer(adminPass, id);
       setCustomers((prev) => prev.filter((c) => c.id !== id));
       toast.success(lang === "es" ? "Cliente eliminado" : "Customer deleted");
-    } catch (error) {
+    } catch {
       toast.error(lang === "es" ? "Error al eliminar" : "Error deleting");
     }
   };

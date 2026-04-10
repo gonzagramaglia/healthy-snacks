@@ -180,7 +180,7 @@ export function DiscountCodes({ lang }: DiscountCodesProps) {
       if (!res.ok) throw new Error(data.error || "Failed to delete coupon");
       toast.success(lang === "es" ? "Código eliminado" : "Code deleted");
       await fetchCouponsList();
-    } catch (error: unknown) {
+    } catch {
       toast.error(lang === "es" ? "Error al eliminar" : "Error deleting");
     }
   };

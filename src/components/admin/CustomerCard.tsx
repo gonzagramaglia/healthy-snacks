@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, ShieldCheck, Edit2, Trash2, Mail, User, History, ExternalLink } from "lucide-react";
+import { ShieldCheck, Edit2, Trash2, Mail, User, History, ExternalLink } from "lucide-react";
 import React from "react";
 import { CustomerPurchase } from "@/lib/customers";
 
