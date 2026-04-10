@@ -1302,7 +1302,10 @@ export function MixBuilder({ lang = "es" }: { lang?: Language }) {
                 <Button
                   variant={appliedDiscount ? "outline" : "default"}
                   onClick={appliedDiscount ? () => setAppliedDiscount(null) : _handleApplyDiscount}
-                  className="h-10 px-4 font-bold cursor-pointer"
+                  className={cn(
+                    "h-10 px-4 font-bold cursor-pointer",
+                    !appliedDiscount && "bg-gray-500 hover:bg-gray-600 text-white border-gray-500 border-0"
+                  )}
                   type="button"
                 >
                   {appliedDiscount ? "×" : t.discount_apply}
@@ -1507,7 +1510,8 @@ export function MixBuilder({ lang = "es" }: { lang?: Language }) {
                   setIsLoadingCheckout(false);
                 }
               }}
-              className="bg-gray-500 hover:bg-gray-600 text-white border-gray-500"
+              variant="default"
+              className="font-bold h-10 px-6"
             >
               {isLoadingCheckout ? (
                 <span className="flex items-center gap-2">
