@@ -124,6 +124,11 @@ export const dictionary = {
     coupon_not_user_action: "Buscá tu cupón acá",
     coupon_status_full: "¡Cupón completo! Tenés 1 Mix gratis 🎉",
     coupon_status_regular: "Progreso: {count}/10 casilleros",
+    loyalty_code_label: "¿Tenés un código de beneficio?",
+    loyalty_code_placeholder: "Ingresá tu código",
+    loyalty_code_button: "Canjear",
+    loyalty_code_success: "¡Éxito! Canjeaste {steps} casilleros.",
+    loyalty_code_error: "Código inválido o ya usado",
 
     // Promo logic text (generated)
     promo_mixes: "Mixes",
@@ -322,6 +327,11 @@ export const dictionary = {
     coupon_not_user_action: "Find your coupon here",
     coupon_status_full: "Coupon complete! You got 1 free Mix 🎉",
     coupon_status_regular: "Progress: {count}/10 slots",
+    loyalty_code_label: "Do you have a reward code?",
+    loyalty_code_placeholder: "Enter your code",
+    loyalty_code_button: "Redeem",
+    loyalty_code_success: "Success! You redeemed {steps} slots.",
+    loyalty_code_error: "Invalid or already used code",
 
     // Promo logic text
     promo_mixes: "Mixes",

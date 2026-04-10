@@ -92,7 +92,19 @@ create trigger customers_set_updated_at
 before update on public.customers
 for each row execute function public.set_updated_at();
 
--- Optional example data
 insert into public.discount_codes (code, type, value, max_discount, min_subtotal, active)
 values ('787', 'percentage', 7, 787, 1, true)
 on conflict (code) do nothing;
+
+create table if not exists public.loyalty_codes (
+  id uuid primary key default gen_random_uuid(),
+  code text not null unique,
+  steps integer not null default 1,
+  is_used boolean not null default false,
+  used_by_customer_id uuid references public.customers(id),
+  used_at timestamptz,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists loyalty_codes_code_idx on public.loyalty_codes (code);
+create index if not exists loyalty_codes_is_used_idx on public.loyalty_codes (is_used);

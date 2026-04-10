@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import Link from "next/link";
-import { LogOut, Ticket, Star, ShieldCheck, ArrowRight } from "lucide-react";
+import { LogOut, Ticket, Star, ShieldCheck, ArrowRight, Key } from "lucide-react";
 import { dictionary, Language } from "@/lib/dictionary";
 import { LanguageToggle } from "@/components/language-toggle";
 
@@ -112,7 +112,7 @@ export function AdminHub({ lang }: AdminHubProps) {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           <Link href={`${baseUrl}/discount-codes`} className="group">
             <Card className="h-full rounded-[2rem] border-2 border-primary/5 bg-white/70 dark:bg-black/70 backdrop-blur-md hover:border-primary/40 transition-all duration-500 hover:shadow-2xl hover:shadow-primary/5 overflow-hidden relative">
               <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 group-hover:scale-110 transition-all duration-500">
@@ -129,6 +129,30 @@ export function AdminHub({ lang }: AdminHubProps) {
               <CardContent className="px-10 pb-10">
                 <p className="text-muted-foreground text-lg leading-relaxed mb-6">
                   {t.manage_coupons.replace("{code}", "OFF10")}
+                </p>
+                <div className="flex items-center gap-2 text-primary font-bold">
+                  {t.manage} <ArrowRight className="w-4 h-4 group-hover:translate-x-2 transition-transform" />
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+
+          <Link href={`${baseUrl}/loyalty-codes`} className="group">
+            <Card className="h-full rounded-[2rem] border-2 border-primary/5 bg-white/70 dark:bg-black/70 backdrop-blur-md hover:border-primary/40 transition-all duration-500 hover:shadow-2xl hover:shadow-primary/5 overflow-hidden relative">
+              <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 group-hover:scale-110 transition-all duration-500">
+                <Key className="w-32 h-32" />
+              </div>
+              <CardHeader className="pt-10 px-10">
+                 <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-500">
+                    <Key className="w-6 h-6 text-primary" />
+                 </div>
+                <CardTitle className="text-3xl font-black tracking-tight group-hover:text-primary transition-colors">
+                  {lang === "es" ? "Códigos Beneficio" : "Loyalty Codes"}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="px-10 pb-10">
+                <p className="text-muted-foreground text-lg leading-relaxed mb-6">
+                  {lang === "es" ? "Generá códigos aleatorios para regalar pasos en el cupón de fidelidad." : "Generate random codes to gift steps in the loyalty coupon."}
                 </p>
                 <div className="flex items-center gap-2 text-primary font-bold">
                   {t.manage} <ArrowRight className="w-4 h-4 group-hover:translate-x-2 transition-transform" />
