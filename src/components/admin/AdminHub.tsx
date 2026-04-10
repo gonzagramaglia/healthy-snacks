@@ -77,8 +77,8 @@ export function AdminHub({ lang }: AdminHubProps) {
       <div className="max-w-6xl mx-auto py-12 px-6 md:px-10 pt-12 md:pt-20">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-12">
           <div className="space-y-1">
-            <h1 className="text-5xl font-black tracking-tight text-white">
-              {(t.title || "Admin").split(" ")[0]} <span className="text-primary">{(t.title || "").split(" ").slice(1).join(" ")}</span>
+            <h1 className="text-5xl font-black tracking-tight text-white uppercase">
+              {(t.title || "Admin").split(" ")[0]} <span className="text-primary italic">{(t.title || "").split(" ").slice(1).join(" ")}</span>
             </h1>
             <p className="text-muted-foreground text-lg font-medium opacity-80">
               {t.welcome || "Bienvenido,"} <span className="text-white font-bold">Gonza</span>
@@ -105,9 +105,9 @@ export function AdminHub({ lang }: AdminHubProps) {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          <Link href={`${baseUrl}/discount-codes`} className="group">
-            <Card className="h-full rounded-[2rem] border-2 border-primary/5 bg-white/70 dark:bg-black/70 backdrop-blur-md hover:border-primary/40 transition-all duration-500 hover:shadow-2xl hover:shadow-primary/5 overflow-hidden relative">
-              <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 group-hover:scale-110 transition-all duration-500">
+          <Link href={`${baseUrl}/discount-codes`} className="group cursor-pointer">
+            <Card className="h-full rounded-[2rem] border-2 border-primary/5 bg-white/70 dark:bg-black/70 backdrop-blur-md hover:border-primary/40 transition-all duration-500 hover:shadow-2xl hover:shadow-primary/5 overflow-hidden relative cursor-pointer">
+              <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 group-hover:scale-110 transition-all duration-500 pointer-events-none">
                 <Ticket className="w-32 h-32" />
               </div>
               <CardHeader className="pt-10 px-10">
@@ -129,9 +129,9 @@ export function AdminHub({ lang }: AdminHubProps) {
             </Card>
           </Link>
 
-          <Link href={`${baseUrl}/loyalty-codes`} className="group">
-            <Card className="h-full rounded-[2rem] border-2 border-primary/5 bg-white/70 dark:bg-black/70 backdrop-blur-md hover:border-primary/40 transition-all duration-500 hover:shadow-2xl hover:shadow-primary/5 overflow-hidden relative">
-              <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 group-hover:scale-110 transition-all duration-500">
+          <Link href={`${baseUrl}/loyalty-codes`} className="group cursor-pointer">
+            <Card className="h-full rounded-[2rem] border-2 border-primary/5 bg-white/70 dark:bg-black/70 backdrop-blur-md hover:border-primary/40 transition-all duration-500 hover:shadow-2xl hover:shadow-primary/5 overflow-hidden relative cursor-pointer">
+              <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 group-hover:scale-110 transition-all duration-500 pointer-events-none">
                 <Key className="w-32 h-32" />
               </div>
               <CardHeader className="pt-10 px-10">
@@ -153,9 +153,9 @@ export function AdminHub({ lang }: AdminHubProps) {
             </Card>
           </Link>
 
-          <Link href={`${baseUrl}/customer-benefits`} className="group">
-            <Card className="h-full rounded-[2rem] border-2 border-primary/5 bg-white/70 dark:bg-black/70 backdrop-blur-md hover:border-primary/40 transition-all duration-500 hover:shadow-2xl hover:shadow-primary/5 overflow-hidden relative">
-              <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 group-hover:scale-110 transition-all duration-500">
+          <Link href={`${baseUrl}/customer-benefits`} className="group cursor-pointer">
+            <Card className="h-full rounded-[2rem] border-2 border-primary/5 bg-white/70 dark:bg-black/70 backdrop-blur-md hover:border-primary/40 transition-all duration-500 hover:shadow-2xl hover:shadow-primary/5 overflow-hidden relative cursor-pointer">
+              <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 group-hover:scale-110 transition-all duration-500 pointer-events-none">
                 <Star className="w-32 h-32" />
               </div>
                <CardHeader className="pt-10 px-10">

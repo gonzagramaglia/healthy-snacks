@@ -185,8 +185,8 @@ export function DiscountCodes({ lang = "es" }: DiscountCodesProps) {
     const text = t.discount_codes || "Códigos de Descuento";
     const parts = text.split(" ");
     return (
-      <h1 className="text-5xl font-black tracking-tight text-foreground">
-        {parts[0]} <span className="text-primary">{parts.slice(1).join(" ")}</span>
+      <h1 className="text-5xl font-black tracking-tight text-foreground uppercase">
+        {parts[0]} <span className="text-primary italic">{parts.slice(1).join(" ")}</span>
       </h1>
     );
   };
@@ -195,10 +195,10 @@ export function DiscountCodes({ lang = "es" }: DiscountCodesProps) {
     <div className="min-h-screen bg-[#fafafa] dark:bg-[#050505] text-foreground">
       <div className="max-w-6xl mx-auto p-4 md:p-10 pt-12 md:pt-20 space-y-6 md:space-y-12">
         {/* Header Section */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-12">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-4">
           <div className="space-y-1">
             {getHeaderTitle()}
-            <p className="text-muted-foreground text-lg font-medium opacity-80">
+            <p className="text-muted-foreground text-lg font-medium opacity-80 decoration-primary underline-offset-4 decoration-2">
               {(t.manage_coupons || "").replace("{code}", "OFF10")}
             </p>
           </div>
@@ -228,7 +228,7 @@ export function DiscountCodes({ lang = "es" }: DiscountCodesProps) {
                  });
                  scrollToForm();
               }}
-              className="flex-1 md:flex-none h-11 md:h-12 gap-2 rounded-xl border-2 shadow-xl shadow-primary/10 font-black text-xs md:text-sm uppercase tracking-widest cursor-pointer"
+              className="flex-1 md:flex-none h-11 md:h-12 gap-2 rounded-xl bg-primary text-primary-foreground border-2 border-primary shadow-xl shadow-primary/20 font-black text-xs md:text-sm uppercase tracking-widest cursor-pointer hover:bg-primary/90"
             >
               <Plus className="w-4 h-4" />
               {t.new_code || "Nuevo"}

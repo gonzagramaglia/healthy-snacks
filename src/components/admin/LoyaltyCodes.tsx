@@ -35,6 +35,8 @@ export function LoyaltyCodes({ lang }: { lang: Language }) {
   const [amount, setAmount] = useState(1);
   const baseUrl = lang === "en" ? "/en/admin" : "/admin";
 
+  const [showGenerator, setShowGenerator] = useState(false);
+
   const fetchCodes = useCallback(async () => {
     try {
       const res = await fetch("/api/admin/loyalty-codes");
@@ -96,101 +98,122 @@ export function LoyaltyCodes({ lang }: { lang: Language }) {
               <ArrowLeft className="w-4 h-4" />
               <span>{t.admin_panel_link}</span>
             </Link>
+            <button
+              onClick={() => setShowGenerator(!showGenerator)}
+              className="flex-1 md:flex-none h-11 md:h-12 px-6 gap-2 rounded-xl bg-white text-black border-2 border-primary/10 font-black text-xs md:text-sm uppercase tracking-widest hover:bg-muted transition-all flex items-center justify-center cursor-pointer shadow-xl shadow-primary/5"
+            >
+              <Plus className="w-4 h-4" />
+              <span>{lang === "es" ? "Nuevo Código" : "New Code"}</span>
+            </button>
           </div>
         </div>
 
         {/* Stats Section */}
-        <div className="grid grid-cols-3 gap-2 md:gap-8 overflow-x-auto pb-2 md:pb-0">
-          <Card className="min-w-[100px] bg-white/50 dark:bg-black/50 backdrop-blur-md border-2 border-primary/5 rounded-xl md:rounded-3xl shadow-sm hover:border-primary/20 transition-all duration-300 group">
-            <CardContent className="p-3 md:p-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
+          <Card className="bg-white/50 dark:bg-black/50 backdrop-blur-md border-2 border-primary/5 rounded-2xl md:rounded-3xl shadow-sm hover:border-primary/20 transition-all duration-300 group">
+            <CardContent className="p-4 md:p-8 text-center md:text-left">
               <div className="flex justify-between items-center mb-1 md:mb-3">
-                <div className="text-[8px] md:text-xs font-black text-muted-foreground uppercase tracking-widest opacity-50">{lang === "es" ? "Generados" : "Generated"}</div>
-                <Plus className="w-3 h-3 md:w-5 md:h-5 text-primary/30 group-hover:text-primary transition-colors" />
+                <div className="text-[10px] md:text-xs font-black text-muted-foreground uppercase tracking-widest opacity-50">{lang === "es" ? "Códigos Generados" : "Codes Generated"}</div>
+                <Plus className="hidden md:block w-5 h-5 text-primary/30 group-hover:text-primary transition-colors" />
               </div>
-              <div className="text-xl md:text-5xl font-black tracking-tighter">{loading ? "..." : codes.length}</div>
+              <div className="text-3xl md:text-5xl font-black tracking-tighter">{loading ? "..." : codes.length}</div>
             </CardContent>
           </Card>
           
-          <Card className="min-w-[100px] bg-white/50 dark:bg-black/50 backdrop-blur-md border-2 border-primary/5 rounded-xl md:rounded-3xl shadow-sm hover:border-primary/20 transition-all duration-300 group">
-            <CardContent className="p-3 md:p-8">
+          <Card className="bg-white/50 dark:bg-black/50 backdrop-blur-md border-2 border-primary/5 rounded-2xl md:rounded-3xl shadow-sm hover:border-primary/20 transition-all duration-300 group">
+            <CardContent className="p-4 md:p-8 text-center md:text-left">
               <div className="flex justify-between items-center mb-1 md:mb-3">
-                <div className="text-[8px] md:text-xs font-black text-muted-foreground uppercase tracking-widest opacity-50">{lang === "es" ? "Pasos" : "Steps"}</div>
-                <CheckCircle2 className="w-3 h-3 md:w-5 md:h-5 text-green-500/30 group-hover:text-green-500 transition-colors" />
+                <div className="text-[10px] md:text-xs font-black text-muted-foreground uppercase tracking-widest opacity-50">{lang === "es" ? "Pasos Generados" : "Steps Generated"}</div>
+                <Circle className="hidden md:block w-5 h-5 text-primary/30 group-hover:text-primary transition-colors" />
               </div>
-              <div className="text-xl md:text-5xl font-black tracking-tighter text-green-500">
+              <div className="text-3xl md:text-5xl font-black tracking-tighter text-primary/80">
                 {loading ? "..." : codes.reduce((acc, c) => acc + (c.steps || 0), 0)}
               </div>
             </CardContent>
           </Card>
           
-          <Card className="min-w-[100px] bg-white/50 dark:bg-black/50 backdrop-blur-md border-2 border-primary/5 rounded-xl md:rounded-3xl shadow-sm hover:border-primary/20 transition-all duration-300 group">
-            <CardContent className="p-3 md:p-8">
+          <Card className="bg-white/50 dark:bg-black/50 backdrop-blur-md border-2 border-primary/5 rounded-2xl md:rounded-3xl shadow-sm hover:border-primary/20 transition-all duration-300 group">
+            <CardContent className="p-4 md:p-8 text-center md:text-left">
               <div className="flex justify-between items-center mb-1 md:mb-3">
-                <div className="text-[8px] md:text-xs font-black text-muted-foreground uppercase tracking-widest opacity-50">{lang === "es" ? "Usados" : "Used"}</div>
-                <RefreshCw className="w-3 h-3 md:w-5 md:h-5 text-primary/30 group-hover:text-primary transition-colors" />
+                <div className="text-[10px] md:text-xs font-black text-muted-foreground uppercase tracking-widest opacity-50">{lang === "es" ? "Códigos Usados" : "Codes Used"}</div>
+                <CheckCircle2 className="hidden md:block w-5 h-5 text-green-500/30 group-hover:text-green-500 transition-colors" />
               </div>
-              <div className="text-xl md:text-5xl font-black tracking-tighter text-primary">
+              <div className="text-3xl md:text-5xl font-black tracking-tighter text-green-500">
                 {loading ? "..." : codes.filter(c => c.is_used).length}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white/50 dark:bg-black/50 backdrop-blur-md border-2 border-primary/5 rounded-2xl md:rounded-3xl shadow-sm hover:border-primary/20 transition-all duration-300 group">
+            <CardContent className="p-4 md:p-8 text-center md:text-left">
+              <div className="flex justify-between items-center mb-1 md:mb-3">
+                <div className="text-[10px] md:text-xs font-black text-muted-foreground uppercase tracking-widest opacity-50">{lang === "es" ? "Pasos Realizados" : "Steps Completed"}</div>
+                <History className="hidden md:block w-5 h-5 text-green-500/30 group-hover:text-green-500 transition-colors" />
+              </div>
+              <div className="text-3xl md:text-5xl font-black tracking-tighter text-green-600">
+                {loading ? "..." : codes.filter(c => c.is_used).reduce((acc, c) => acc + (c.steps || 0), 0)}
               </div>
             </CardContent>
           </Card>
         </div>
 
         {/* Action Card (Generator) */}
-        <Card className="border-2 border-primary/20 rounded-3xl md:rounded-[3rem] shadow-2xl bg-white dark:bg-black overflow-hidden animate-in fade-in slide-in-from-bottom-8 duration-700">
-          <CardContent className="p-6 md:p-12">
-            <div className="flex justify-between items-center mb-6 md:mb-10">
-               <h2 className="text-xl md:text-3xl font-black text-foreground uppercase tracking-tight flex items-center gap-3">
-                <Plus className="w-6 h-6 text-primary" />
-                {lang === "es" ? "Generar Nuevos" : "Generate New"}
-              </h2>
-               <div className="h-1.5 flex-1 mx-4 bg-primary/5 rounded-full" />
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-10">
-              <div className="space-y-4">
-                <label className="text-xs md:text-sm font-black uppercase tracking-widest opacity-60">
-                  {lang === "es" ? "Pasos por código" : "Steps per code"}
-                </label>
-                <input 
-                  type="number" 
-                  min="1" 
-                  max="10" 
-                  value={steps}
-                  onChange={(e) => setSteps(parseInt(e.target.value))}
-                  className="w-full h-12 md:h-16 text-xl md:text-3xl font-black text-center rounded-2xl border-2 border-primary/10 focus:ring-primary/40 bg-muted/5 tracking-tighter transition-all"
-                />
+        {showGenerator && (
+          <Card className="border-2 border-primary/20 rounded-3xl md:rounded-[3rem] shadow-2xl bg-white dark:bg-black overflow-hidden animate-in fade-in slide-in-from-top-8 duration-700">
+            <CardContent className="p-6 md:p-12">
+              <div className="flex justify-between items-center mb-6 md:mb-10">
+                 <h2 className="text-xl md:text-3xl font-black text-foreground uppercase tracking-tight flex items-center gap-3">
+                  <Plus className="w-6 h-6 text-primary" />
+                  {lang === "es" ? "Generar Nuevos" : "Generate New"}
+                </h2>
+                 <div className="h-1.5 flex-1 mx-4 bg-primary/5 rounded-full" />
               </div>
-              <div className="space-y-4">
-                <label className="text-xs md:text-sm font-black uppercase tracking-widest opacity-60">
-                  {lang === "es" ? "Cantidad a generar" : "Qty to generate"}
-                </label>
-                <input 
-                  type="number" 
-                  min="1" 
-                  max="50" 
-                  value={amount}
-                  onChange={(e) => setAmount(parseInt(e.target.value))}
-                  className="w-full h-12 md:h-16 text-xl md:text-3xl font-black text-center rounded-2xl border-2 border-primary/10 focus:ring-primary/40 bg-muted/5 tracking-tighter transition-all"
-                />
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-10">
+                <div className="space-y-4">
+                  <label className="text-xs md:text-sm font-black uppercase tracking-widest opacity-60">
+                    {lang === "es" ? "Pasos por código" : "Steps per code"}
+                  </label>
+                  <input 
+                    type="number" 
+                    min="1" 
+                    max="10" 
+                    value={steps}
+                    onChange={(e) => setSteps(parseInt(e.target.value))}
+                    className="w-full h-12 md:h-16 text-xl md:text-3xl font-black text-center rounded-2xl border-2 border-primary/10 focus:ring-primary/40 bg-muted/5 tracking-tighter transition-all"
+                  />
+                </div>
+                <div className="space-y-4">
+                  <label className="text-xs md:text-sm font-black uppercase tracking-widest opacity-60">
+                    {lang === "es" ? "Cantidad a generar" : "Qty to generate"}
+                  </label>
+                  <input 
+                    type="number" 
+                    min="1" 
+                    max="50" 
+                    value={amount}
+                    onChange={(e) => setAmount(parseInt(e.target.value))}
+                    className="w-full h-12 md:h-16 text-xl md:text-3xl font-black text-center rounded-2xl border-2 border-primary/10 focus:ring-primary/40 bg-muted/5 tracking-tighter transition-all"
+                  />
+                </div>
+                <div className="flex items-end">
+                  <button
+                    onClick={handleGenerate}
+                    disabled={generating}
+                    className="w-full h-12 md:h-16 bg-primary text-primary-foreground font-black rounded-2xl shadow-xl shadow-primary/20 hover:opacity-90 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-3 cursor-pointer"
+                  >
+                    {generating ? (
+                      <RefreshCw className="w-6 h-6 animate-spin" />
+                    ) : (
+                      <Key className="w-6 h-6" />
+                    )}
+                    <span className="uppercase tracking-widest text-sm md:text-base">{lang === "es" ? "Generar" : "Generate"}</span>
+                  </button>
+                </div>
               </div>
-              <div className="flex items-end">
-                <button
-                  onClick={handleGenerate}
-                  disabled={generating}
-                  className="w-full h-12 md:h-16 bg-primary text-primary-foreground font-black rounded-2xl shadow-xl shadow-primary/20 hover:opacity-90 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-3 cursor-pointer"
-                >
-                  {generating ? (
-                    <RefreshCw className="w-6 h-6 animate-spin" />
-                  ) : (
-                    <Key className="w-6 h-6" />
-                  )}
-                  <span className="uppercase tracking-widest text-sm md:text-base">{lang === "es" ? "Generar" : "Generate"}</span>
-                </button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
 
         {/* List Section */}
         <div className="space-y-6 md:space-y-10 pt-4">
