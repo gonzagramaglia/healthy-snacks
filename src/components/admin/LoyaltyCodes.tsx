@@ -18,7 +18,6 @@ interface LoyaltyCode {
 
 export function LoyaltyCodes({ lang }: { lang: Language }) {
   const router = useRouter();
-  const [isAdmin, setIsAdmin] = useState(false);
   const t = (dictionary[lang] || dictionary["es"]).admin || dictionary["es"].admin;
   const [codes, setCodes] = useState<LoyaltyCode[]>([]);
   const [loading, setLoading] = useState(true);
@@ -35,7 +34,6 @@ export function LoyaltyCodes({ lang }: { lang: Language }) {
       }
       const data = await res.json();
       setCodes(data);
-      setIsAdmin(true);
     } catch (err) {
       console.error("Error fetching codes:", err);
     } finally {

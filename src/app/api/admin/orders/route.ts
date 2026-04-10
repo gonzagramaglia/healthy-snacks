@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getOrders } from '@/lib/orders';
 import { isAdmin } from '@/lib/admin-auth';
 

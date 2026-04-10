@@ -17,9 +17,7 @@ import {
   Trash2, 
   Edit2, 
   CheckCircle2, 
-  XCircle,
-  ExternalLink,
-  ChevronRight
+  XCircle
 } from "lucide-react";
 import { dictionary, Language } from "@/lib/dictionary";
 
