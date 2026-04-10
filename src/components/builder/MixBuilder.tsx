@@ -738,7 +738,7 @@ export function MixBuilder({ lang = "es" }: { lang?: Language }) {
                 onClick={setClassicMix}
                 disabled={isClassicMix}
                 className={cn(
-                  "!bg-transparent !border-gray-200 !text-foreground hover:!bg-muted/20 hover:!border-gray-300",
+                  "!bg-transparent !border-gray-200 !text-foreground hover:!bg-muted/20 hover:!border-gray-300 font-bold",
                   isClassicMix && "opacity-50 cursor-not-allowed",
                   shakeClassicMix && "animate-wiggle",
                 )}
@@ -789,7 +789,7 @@ export function MixBuilder({ lang = "es" }: { lang?: Language }) {
                   }, 100);
                 }}
                 className={cn(
-                  "bg-yellow-500 hover:bg-yellow-600 text-white border-yellow-500 lg:mr-3 cursor-pointer",
+                  "bg-yellow-500 hover:bg-yellow-600 text-white border-yellow-500 lg:mr-3 cursor-pointer font-bold",
                   !isValid && "opacity-50",
                   shakeAddToCart && isValid && "animate-wiggle",
                 )}

@@ -77,7 +77,7 @@ export function Pricing({ lang }: PricingProps) {
                                         }
                                         scrollToBuilder();
                                     }}
-                                    className={`w-full py-2.5 rounded-lg font-medium transition-colors mb-6 cursor-pointer ${tier.highlight
+                                    className={`w-full py-2.5 rounded-lg font-bold transition-colors mb-6 cursor-pointer ${tier.highlight
                                         ? 'bg-primary text-primary-foreground hover:bg-primary/90'
                                         : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
                                         }`}
