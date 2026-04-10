@@ -207,7 +207,7 @@ export function DiscountCodes({ lang = "es" }: DiscountCodesProps) {
             <Button 
               variant="outline" 
               onClick={() => router.push(baseUrl)}
-              className="flex-1 md:flex-none h-11 md:h-12 gap-2 rounded-xl border-2 font-black text-xs md:text-sm uppercase tracking-widest hover:bg-muted"
+              className="flex-1 md:flex-none h-11 md:h-12 gap-2 rounded-xl border-2 font-black text-xs md:text-sm uppercase tracking-widest hover:bg-muted cursor-pointer"
             >
               <ArrowLeft className="w-4 h-4" />
               <span>{t.admin_panel_link || "Panel Admin"}</span>
@@ -228,7 +228,7 @@ export function DiscountCodes({ lang = "es" }: DiscountCodesProps) {
                  });
                  scrollToForm();
               }}
-              className="flex-1 md:flex-none h-11 md:h-12 gap-2 rounded-xl border-2 shadow-xl shadow-primary/10 font-black text-xs md:text-sm uppercase tracking-widest"
+              className="flex-1 md:flex-none h-11 md:h-12 gap-2 rounded-xl border-2 shadow-xl shadow-primary/10 font-black text-xs md:text-sm uppercase tracking-widest cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               {t.new_code || "Nuevo"}
@@ -398,7 +398,7 @@ export function DiscountCodes({ lang = "es" }: DiscountCodesProps) {
                   <div className="flex gap-4 pt-8 border-t border-primary/10">
                     <Button 
                       type="submit" 
-                      className="flex-1 md:flex-none h-12 md:h-16 px-8 md:px-14 rounded-xl md:rounded-[2rem] font-black text-base md:text-xl shadow-2xl shadow-primary/30 transition-all active:scale-95"
+                      className="flex-1 md:flex-none h-12 md:h-16 px-8 md:px-14 rounded-xl md:rounded-[2rem] font-black text-base md:text-xl shadow-2xl shadow-primary/30 transition-all active:scale-95 cursor-pointer"
                     >
                       <span className="md:hidden">{t.save || "Guardar"}</span>
                       <span className="hidden md:inline">{editingId ? (t.save_changes || "Guardar") : (t.new_code || "Nuevo")}</span>
@@ -406,7 +406,7 @@ export function DiscountCodes({ lang = "es" }: DiscountCodesProps) {
                     <Button 
                       type="button" 
                       variant="outline" 
-                      className="flex-1 md:flex-none h-12 md:h-16 px-6 md:px-10 rounded-xl md:rounded-[2rem] font-black text-base md:text-lg border-2 hover:bg-red-50 hover:text-red-500 transition-all"
+                      className="flex-1 md:flex-none h-12 md:h-16 px-6 md:px-10 rounded-xl md:rounded-[2rem] font-black text-base md:text-lg border-2 hover:bg-red-50 hover:text-red-500 transition-all cursor-pointer"
                       onClick={() => {
                         setShowForm(false);
                         setEditingId(null);
