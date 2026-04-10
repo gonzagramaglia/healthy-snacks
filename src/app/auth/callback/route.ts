@@ -104,8 +104,21 @@ export async function GET(request: NextRequest) {
           }
 
           const prefix = lang === "en" ? "/en/u/" : "/u/";
-          console.log("Redirecting new user to profile:", `${prefix}${username}`);
-          return NextResponse.redirect(`${origin}${prefix}${username}`);
+          const userProfilePath = `${prefix}${username}`;
+          
+          // Determine final redirect
+          let finalRedirect = userProfilePath;
+          
+          // If next is /admin components and user is admin, allow it
+          if (next.startsWith("/admin") || next.startsWith("/en/admin")) {
+            const { isAdminEmail } = await import("@/lib/admin-auth");
+            if (isAdminEmail(user.email)) {
+              finalRedirect = next;
+            }
+          }
+
+          console.log("Redirecting new user to:", finalRedirect);
+          return NextResponse.redirect(`${origin}${finalRedirect}`);
         } else {
           console.log("Existing customer found:", customer.username);
           // Update existing record if not verified or name is missing
@@ -120,8 +133,21 @@ export async function GET(request: NextRequest) {
           }
 
           const prefix = lang === "en" ? "/en/u/" : "/u/";
-          console.log("Redirecting to profile:", `${prefix}${customer.username}`);
-          return NextResponse.redirect(`${origin}${prefix}${customer.username}`);
+          const userProfilePath = `${prefix}${customer.username}`;
+          
+          // Determine final redirect
+          let finalRedirect = userProfilePath;
+          
+          // If next is /admin components and user is admin, allow it
+          if (next.startsWith("/admin") || next.startsWith("/en/admin")) {
+            const { isAdminEmail } = await import("@/lib/admin-auth");
+            if (isAdminEmail(user.email)) {
+              finalRedirect = next;
+            }
+          }
+
+          console.log("Redirecting to:", finalRedirect);
+          return NextResponse.redirect(`${origin}${finalRedirect}`);
         }
       }
     } catch (err) {

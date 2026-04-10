@@ -37,7 +37,7 @@ export default function AdminLoginPage() {
     try {
       // Use the existing auth utility
       const { signInWithGoogle } = await import("@/lib/auth-actions");
-      await signInWithGoogle("es");
+      await signInWithGoogle("es", "/admin");
     } catch (err: unknown) {
       const errorMsg = err instanceof Error ? err.message : "Error al iniciar sesión";
       setError(errorMsg);

@@ -1,6 +1,20 @@
 import { createClient } from "@/lib/supabase/server";
 
 /**
+ * Checks if a specific email is in the authorized admin list.
+ */
+export function isAdminEmail(email: string | undefined): boolean {
+  if (!email) return false;
+  
+  const adminEmails = (process.env.ADMIN_EMAILS || "")
+    .split(",")
+    .map(e => e.trim().toLowerCase())
+    .filter(e => e.length > 0);
+
+  return adminEmails.includes(email.toLowerCase());
+}
+
+/**
  * Checks if the currently logged-in user is an authorized administrator.
  * Authorization is based on the ADMIN_EMAILS environment variable.
  */
@@ -13,12 +27,7 @@ export async function isAdmin() {
       return false;
     }
 
-    const adminEmails = (process.env.ADMIN_EMAILS || "")
-      .split(",")
-      .map(email => email.trim().toLowerCase())
-      .filter(email => email.length > 0);
-
-    return adminEmails.includes(user.email.toLowerCase());
+    return isAdminEmail(user.email);
   } catch (error) {
     console.error("Error in isAdmin check:", error);
     return false;

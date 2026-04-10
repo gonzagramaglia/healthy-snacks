@@ -2,14 +2,19 @@
 
 import { createClient } from "./supabase/client";
 
-export async function signInWithGoogle(lang: string = "es") {
+export async function signInWithGoogle(lang: string = "es", next?: string) {
   const supabase = createClient();
   const baseUrl = window.location.origin;
   
+  let redirectUrl = `${baseUrl}/auth/callback?lang=${lang}`;
+  if (next) {
+    redirectUrl += `&next=${encodeURIComponent(next)}`;
+  }
+
   const { error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
-      redirectTo: `${baseUrl}/auth/callback?lang=${lang}`,
+      redirectTo: redirectUrl,
     },
   });
 
