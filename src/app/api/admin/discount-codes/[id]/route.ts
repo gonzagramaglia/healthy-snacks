@@ -1,19 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-
-function isAuthorized(request: NextRequest) {
-  const adminPass = request.headers.get("x-admin-password") || "";
-  return (
-    !!process.env.ADMIN_PASSWORD && adminPass === process.env.ADMIN_PASSWORD
-  );
-}
+import { isAdmin } from "@/lib/admin-auth";
 
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    if (!isAuthorized(request)) {
+    if (!await isAdmin()) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -71,7 +65,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    if (!isAuthorized(request)) {
+    if (!await isAdmin()) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

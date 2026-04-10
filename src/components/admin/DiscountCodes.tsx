@@ -55,10 +55,9 @@ interface DiscountCodesProps {
   lang: Language;
 }
 
-export function DiscountCodes({ lang }: DiscountCodesProps) {
+export function DiscountCodes({ lang = "es" }: DiscountCodesProps) {
   const router = useRouter();
   const formRef = useRef<HTMLDivElement>(null);
-  const [adminPass, setAdminPass] = useState("");
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -74,7 +73,7 @@ export function DiscountCodes({ lang }: DiscountCodesProps) {
     allowed_email: "",
   });
 
-  const t = dictionary[lang].admin;
+  const t = (dictionary[lang] || dictionary["es"]).admin || dictionary["es"].admin;
   const baseUrl = lang === "en" ? "/en/admin" : "/admin";
 
   const scrollToForm = () => {
@@ -84,21 +83,12 @@ export function DiscountCodes({ lang }: DiscountCodesProps) {
   };
 
   const fetchCouponsList = useCallback(
-    async (pass?: string) => {
-      const currentPass = pass || adminPass;
-      if (!currentPass) return;
-
+    async () => {
       setLoading(true);
       try {
-        const res = await fetch("/api/admin/discount-codes", {
-          headers: {
-            "Content-Type": "application/json",
-            "x-admin-password": currentPass,
-          },
-        });
+        const res = await fetch("/api/admin/discount-codes");
 
         if (res.status === 401) {
-          window.localStorage.removeItem("admin_password");
           router.push("/admin/login");
           return;
         }
@@ -113,18 +103,12 @@ export function DiscountCodes({ lang }: DiscountCodesProps) {
         setLoading(false);
       }
     },
-    [adminPass, router, lang],
+    [router, lang],
   );
 
   useEffect(() => {
-    const storedPass = window.localStorage.getItem("admin_password") || "";
-    if (!storedPass) {
-      router.push("/admin/login");
-      return;
-    }
-    setAdminPass(storedPass);
-    fetchCouponsList(storedPass);
-  }, [router, fetchCouponsList]);
+    fetchCouponsList();
+  }, [fetchCouponsList]);
 
   const handleSaveCoupon = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -134,7 +118,6 @@ export function DiscountCodes({ lang }: DiscountCodesProps) {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
-            "x-admin-password": adminPass,
           },
           body: JSON.stringify(formData),
         });
@@ -146,7 +129,6 @@ export function DiscountCodes({ lang }: DiscountCodesProps) {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "x-admin-password": adminPass,
           },
           body: JSON.stringify(formData),
         });
@@ -173,7 +155,6 @@ export function DiscountCodes({ lang }: DiscountCodesProps) {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
-          "x-admin-password": adminPass,
         },
       });
       const data = await res.json();
@@ -201,7 +182,16 @@ export function DiscountCodes({ lang }: DiscountCodesProps) {
     scrollToForm();
   };
 
-  if (!adminPass) return null;
+  // Safe dictionary rendering with fallbacks
+  const getHeaderTitle = () => {
+    const text = t.discount_codes || "Códigos de Descuento";
+    const parts = text.split(" ");
+    return (
+      <h1 className="text-5xl font-black tracking-tight text-foreground">
+        {parts[0]} <span className="text-primary">{parts.slice(1).join(" ")}</span>
+      </h1>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-[#fafafa] dark:bg-[#050505] text-foreground">
@@ -209,11 +199,9 @@ export function DiscountCodes({ lang }: DiscountCodesProps) {
         {/* Header Section */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-12">
           <div className="space-y-1">
-            <h1 className="text-5xl font-black tracking-tight text-foreground">
-              {t.discount_codes.split(" ")[0]} <span className="text-primary">{t.discount_codes.split(" ").slice(1).join(" ")}</span>
-            </h1>
+            {getHeaderTitle()}
             <p className="text-muted-foreground text-lg font-medium opacity-80">
-              {t.manage_coupons.replace("{code}", "OFF10")}
+              {(t.manage_coupons || "").replace("{code}", "OFF10")}
             </p>
           </div>
           
@@ -224,7 +212,7 @@ export function DiscountCodes({ lang }: DiscountCodesProps) {
               className="flex-1 md:flex-none h-11 md:h-12 gap-2 rounded-xl border-2 font-black text-xs md:text-sm uppercase tracking-widest hover:bg-muted"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span>{t.admin_panel_link}</span>
+              <span>{t.admin_panel_link || "Panel Admin"}</span>
             </Button>
             <Button 
               onClick={() => {
@@ -245,43 +233,43 @@ export function DiscountCodes({ lang }: DiscountCodesProps) {
               className="flex-1 md:flex-none h-11 md:h-12 gap-2 rounded-xl border-2 shadow-xl shadow-primary/10 font-black text-xs md:text-sm uppercase tracking-widest"
             >
               <Plus className="w-4 h-4" />
-              {t.new_code}
+              {t.new_code || "Nuevo"}
             </Button>
           </div>
         </div>
 
-        {/* Stats Section - 3 across on Mobile! */}
+        {/* Stats Section */}
         <div className="grid grid-cols-3 gap-2 md:gap-8">
-          <Card className="bg-white/50 dark:bg-black/50 backdrop-blur-md border-2 border-primary/5 rounded-xl md:rounded-3xl shadow-sm hover:border-primary/20 transition-all duration-300 group">
+          <Card className="bg-white/50 dark:bg-black/50 backdrop-blur-md border-2 border-primary/5 rounded-xl md:rounded-3xl shadow-sm">
             <CardContent className="p-3 md:p-8">
               <div className="flex justify-between items-center mb-1 md:mb-3">
-                <div className="text-[8px] md:text-xs font-black text-muted-foreground uppercase tracking-widest opacity-50">{t.total_codes}</div>
-                <Ticket className="w-3 h-3 md:w-5 md:h-5 text-primary/30 group-hover:text-primary/60 transition-colors" />
+                <div className="text-[8px] md:text-xs font-black text-muted-foreground uppercase tracking-widest opacity-50">{t.total_codes || "Total"}</div>
+                <Ticket className="w-3 h-3 md:w-5 md:h-5 text-primary/30" />
               </div>
-              <div className="text-xl md:text-5xl font-black tracking-tighter">{loading ? "..." : coupons.length}</div>
+              <div className="text-xl md:text-5xl font-black tracking-tighter">{loading ? "..." : (coupons || []).length}</div>
             </CardContent>
           </Card>
           
-          <Card className="bg-white/50 dark:bg-black/50 backdrop-blur-md border-2 border-primary/5 rounded-xl md:rounded-3xl shadow-sm hover:border-primary/20 transition-all duration-300 group">
+          <Card className="bg-white/50 dark:bg-black/50 backdrop-blur-md border-2 border-primary/5 rounded-xl md:rounded-3xl shadow-sm">
             <CardContent className="p-3 md:p-8">
               <div className="flex justify-between items-center mb-1 md:mb-3">
-                <div className="text-[8px] md:text-xs font-black text-muted-foreground uppercase tracking-widest opacity-50">{t.active_codes}</div>
-                <CheckCircle2 className="w-3 h-3 md:w-5 md:h-5 text-green-500/30 group-hover:text-green-500 transition-colors" />
+                <div className="text-[8px] md:text-xs font-black text-muted-foreground uppercase tracking-widest opacity-50">{t.active_codes || "Activos"}</div>
+                <CheckCircle2 className="w-3 h-3 md:w-5 md:h-5 text-green-500/30" />
               </div>
               <div className="text-xl md:text-5xl font-black tracking-tighter text-green-500">
-                {loading ? "..." : coupons.filter(c => c.active).length}
+                {loading ? "..." : (coupons || []).filter(c => c.active).length}
               </div>
             </CardContent>
           </Card>
           
-          <Card className="bg-white/50 dark:bg-black/50 backdrop-blur-md border-2 border-primary/5 rounded-xl md:rounded-3xl shadow-sm hover:border-primary/20 transition-all duration-300 group">
+          <Card className="bg-white/50 dark:bg-black/50 backdrop-blur-md border-2 border-primary/5 rounded-xl md:rounded-3xl shadow-sm">
             <CardContent className="p-3 md:p-8">
               <div className="flex justify-between items-center mb-1 md:mb-3">
-                <div className="text-[8px] md:text-xs font-black text-muted-foreground uppercase tracking-widest opacity-50">{t.total_usage}</div>
-                <History className="w-3 h-3 md:w-5 md:h-5 text-primary/30 group-hover:text-primary/60 transition-colors" />
+                <div className="text-[8px] md:text-xs font-black text-muted-foreground uppercase tracking-widest opacity-50">{t.total_usage || "Usos"}</div>
+                <History className="w-3 h-3 md:w-5 md:h-5 text-primary/30" />
               </div>
               <div className="text-xl md:text-5xl font-black tracking-tighter text-primary">
-                {loading ? "..." : coupons.reduce((acc, c) => acc + c.used_count, 0)}
+                {loading ? "..." : (coupons || []).reduce((acc, c) => acc + (c.used_count || 0), 0)}
               </div>
             </CardContent>
           </Card>
@@ -290,11 +278,11 @@ export function DiscountCodes({ lang }: DiscountCodesProps) {
         {/* Form Container */}
         <div ref={formRef} className="scroll-mt-10">
           {showForm && (
-            <Card className="border-2 border-primary/20 rounded-3xl md:rounded-[3rem] shadow-2xl bg-white dark:bg-black overflow-hidden animate-in fade-in slide-in-from-top-4 duration-500">
+            <Card className="border-2 border-primary/20 rounded-3xl md:rounded-[3rem] shadow-2xl bg-white dark:bg-black overflow-hidden">
               <CardContent className="p-5 md:p-12">
                 <div className="flex justify-between items-center mb-6 md:mb-10">
                    <h2 className="text-xl md:text-3xl font-black text-foreground uppercase tracking-tight">
-                    {editingId ? t.edit : t.new_code}
+                    {editingId ? (t.edit || "Editar") : (t.new_code || "Nuevo")}
                   </h2>
                    <div className="h-1.5 flex-1 mx-4 bg-primary/5 rounded-full" />
                 </div>
@@ -414,8 +402,8 @@ export function DiscountCodes({ lang }: DiscountCodesProps) {
                       type="submit" 
                       className="flex-1 md:flex-none h-12 md:h-16 px-8 md:px-14 rounded-xl md:rounded-[2rem] font-black text-base md:text-xl shadow-2xl shadow-primary/30 transition-all active:scale-95"
                     >
-                      <span className="md:hidden">{t.save}</span>
-                      <span className="hidden md:inline">{editingId ? t.save_changes : t.new_code}</span>
+                      <span className="md:hidden">{t.save || "Guardar"}</span>
+                      <span className="hidden md:inline">{editingId ? (t.save_changes || "Guardar") : (t.new_code || "Nuevo")}</span>
                     </Button>
                     <Button 
                       type="button" 
@@ -426,7 +414,7 @@ export function DiscountCodes({ lang }: DiscountCodesProps) {
                         setEditingId(null);
                       }}
                     >
-                      {t.cancel}
+                      {t.cancel || "Cancelar"}
                     </Button>
                   </div>
                 </form>
@@ -439,7 +427,7 @@ export function DiscountCodes({ lang }: DiscountCodesProps) {
         <div className="space-y-6 md:space-y-10">
           <div className="flex items-center gap-4">
              <div className="w-2 md:w-3 h-8 md:h-12 bg-primary rounded-full shadow-lg shadow-primary/20" />
-             <h2 className="text-2xl md:text-4xl font-black text-foreground uppercase tracking-tighter">{t.list_title}</h2>
+             <h2 className="text-2xl md:text-4xl font-black text-foreground uppercase tracking-tighter">{t.list_title || "Listado"}</h2>
           </div>
 
           {loading ? (
@@ -448,18 +436,18 @@ export function DiscountCodes({ lang }: DiscountCodesProps) {
                 <Card key={i} className="border-2 border-primary/5 rounded-[2rem] overflow-hidden h-48 md:h-64 animate-pulse bg-muted/20" />
               ))}
             </div>
-          ) : coupons.length === 0 ? (
+          ) : (coupons || []).length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 md:py-32 border-2 border-dashed border-primary/10 rounded-[2.5rem] md:rounded-[4rem] bg-white/30 dark:bg-black/30 backdrop-blur-sm">
-              <Ticket className="w-16 h-16 md:w-24 md:h-24 text-primary/10 mb-6 animate-bounce duration-[3000ms]" />
-              <h3 className="text-2xl md:text-4xl font-black text-foreground mb-3 tracking-tight">{t.no_results}</h3>
+              <Ticket className="w-16 h-16 md:w-24 md:h-24 text-primary/10 mb-6" />
+              <h3 className="text-2xl md:text-4xl font-black text-foreground mb-3 tracking-tight">{t.no_results || "Nada por acá"}</h3>
             </div>
           ) : (
             <div className="grid gap-4 md:grid-cols-2 lg:gap-8">
-              {coupons.map((coupon) => (
+              {(coupons || []).map((coupon) => (
                 <Card 
                   key={coupon.id} 
                   className={`
-                    group border-2 rounded-[2rem] md:rounded-[2.5rem] overflow-hidden bg-white dark:bg-black transition-all duration-500 hover:border-primary/40 hover:shadow-2xl hover:shadow-primary/5
+                    group border-2 rounded-[2rem] md:rounded-[2.5rem] overflow-hidden bg-white dark:bg-black transition-all duration-500 hover:border-primary/40
                     ${!coupon.active ? "opacity-60 grayscale border-muted/20" : "border-primary/5"}
                     ${editingId === coupon.id ? "ring-8 ring-primary/5 border-primary/30" : ""}
                   `}
@@ -484,17 +472,14 @@ export function DiscountCodes({ lang }: DiscountCodesProps) {
                             <span className="text-[10px] md:text-xs font-black text-muted-foreground uppercase tracking-widest bg-muted/50 px-2 py-0.5 rounded-lg border border-primary/5">
                               {coupon.type === "percentage" ? (lang === "es" ? "Porcentual" : "Percentage") : (lang === "es" ? "Suma Fija" : "Fixed Amount")}
                             </span>
-                            {!coupon.active && (
-                              <span className="text-[10px] md:text-xs font-black text-red-500 uppercase tracking-widest bg-red-500/5 px-2 py-0.5 rounded-lg border border-red-500/10">{lang === "es" ? "Inactivo" : "Inactive"}</span>
-                            )}
                           </div>
                         </div>
                         
                         <div className="flex gap-2">
-                          <Button variant="ghost" size="icon" onClick={() => handleEditCoupon(coupon)} className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl hover:bg-primary/10 hover:text-primary transition-all">
+                          <Button variant="ghost" size="icon" onClick={() => handleEditCoupon(coupon)} className="w-10 h-10 md:w-12 md:h-12 rounded-xl">
                             <Edit2 className="w-4 h-4 md:w-5 md:h-5" />
                           </Button>
-                          <Button variant="ghost" size="icon" onClick={() => handleDeleteCoupon(coupon.id)} className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl hover:bg-red-50 hover:text-red-500 transition-all">
+                          <Button variant="ghost" size="icon" onClick={() => handleDeleteCoupon(coupon.id)} className="w-10 h-10 md:w-12 md:h-12 rounded-xl">
                             <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
                           </Button>
                         </div>
@@ -507,44 +492,20 @@ export function DiscountCodes({ lang }: DiscountCodesProps) {
                                {coupon.max_discount && <span className="text-sm md:text-lg font-bold text-muted-foreground/30 ml-3">MAX ${coupon.max_discount}</span>}
                             </div>
                             
-                            <div className="grid grid-cols-2 gap-x-6 md:gap-x-12 gap-y-3">
+                            <div className="grid grid-cols-2 gap-x-6">
                                <div className="space-y-1">
-                                  <p className="text-[9px] md:text-[10px] font-black text-muted-foreground uppercase opacity-40 tracking-widest">{lang === "es" ? "Uso Histórico" : "Usage History"}</p>
-                                  <div className="flex items-center gap-2">
-                                     <div className="flex -space-x-1">
-                                        {[1,2,3].map(i => <div key={i} className="w-4 h-4 rounded-full border border-background bg-primary/10" />)}
-                                     </div>
-                                     <p className="text-sm md:text-xl font-black tabular-nums">
-                                       {coupon.used_count} <span className="text-muted-foreground/20 font-bold">/ {coupon.usage_limit || "∞"}</span>
-                                     </p>
-                                  </div>
+                                  <p className="text-[9px] md:text-[10px] font-black text-muted-foreground uppercase opacity-40 tracking-widest">{lang === "es" ? "Uso" : "Usage"}</p>
+                                  <p className="text-sm md:text-xl font-black tabular-nums">
+                                    {coupon.used_count || 0} <span className="text-muted-foreground/20 font-bold">/ {coupon.usage_limit || "∞"}</span>
+                                  </p>
                                </div>
                                <div className="space-y-1">
-                                  <p className="text-[9px] md:text-[10px] font-black text-muted-foreground uppercase opacity-40 tracking-widest">{lang === "es" ? "Condición base" : "Base Condition"}</p>
+                                  <p className="text-[9px] md:text-[10px] font-black text-muted-foreground uppercase opacity-40 tracking-widest">{lang === "es" ? "Mínimo" : "Min"}</p>
                                   <p className="text-sm md:text-xl font-black tabular-nums">${coupon.min_subtotal || 0}</p>
                                </div>
                             </div>
                          </div>
-
-                         <div className="relative group/tag hidden md:block">
-                            <div className="h-24 w-24 md:h-32 md:w-32 bg-primary/[0.03] border border-primary/5 rounded-[2.5rem] flex items-center justify-center group-hover:bg-primary/[0.05] transition-all duration-700">
-                               <Ticket className="w-12 h-12 md:w-16 md:h-16 text-primary/10 group-hover:text-primary/20 transition-all duration-700 -rotate-12 group-hover:rotate-0" />
-                               <ChevronRight className="absolute bottom-4 right-4 w-5 h-5 text-primary/10 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0" />
-                            </div>
-                         </div>
                       </div>
-
-                      {coupon.allowed_email && (
-                        <div className="mt-8 pt-6 border-t border-primary/10 flex items-center gap-3">
-                           <div className="w-8 h-8 rounded-full bg-primary/5 flex items-center justify-center text-primary/40">
-                              <ExternalLink className="w-4 h-4" />
-                           </div>
-                           <div className="space-y-0.5">
-                              <p className="text-[9px] font-black text-muted-foreground uppercase opacity-40">{lang === "es" ? "Acceso Restringido" : "Restricted Access"}</p>
-                              <p className="text-xs md:text-sm font-bold text-foreground/80">{coupon.allowed_email}</p>
-                           </div>
-                        </div>
-                      )}
                     </div>
                   </CardContent>
                 </Card>

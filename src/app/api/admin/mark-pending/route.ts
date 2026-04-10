@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { markOrderPending } from '@/lib/orders';
+import { isAdmin } from '@/lib/admin-auth';
 
 export async function POST(request: NextRequest) {
   try {
-    const adminPass = request.headers.get('x-admin-password') || '';
-    if (!process.env.ADMIN_PASSWORD || adminPass !== process.env.ADMIN_PASSWORD) {
+    if (!await isAdmin()) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

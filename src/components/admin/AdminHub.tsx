@@ -15,7 +15,7 @@ interface AdminHubProps {
 
 export function AdminHub({ lang }: AdminHubProps) {
   const router = useRouter();
-  const [adminPass, setAdminPass] = useState("");
+  const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   const baseUrl = lang === "en" ? "/en/admin" : "/admin";
@@ -25,28 +25,19 @@ export function AdminHub({ lang }: AdminHubProps) {
     window.localStorage.setItem("admin_lang", lang);
 
     const checkAuth = async () => {
-      const storedPass = window.localStorage.getItem("admin_password") || "";
-      if (!storedPass) {
-        router.push("/admin/login");
-        return;
-      }
-
       try {
-        const res = await fetch("/api/admin/orders", {
-          headers: { "x-admin-password": storedPass },
-        });
+        const res = await fetch("/api/admin/orders");
         if (!res.ok) {
-          window.localStorage.removeItem("admin_password");
           router.push("/admin/login");
           return;
         }
+        setIsAdmin(true);
       } catch {
         router.push("/admin/login");
         return;
+      } finally {
+        setIsLoading(false);
       }
-
-      setAdminPass(storedPass);
-      setIsLoading(false);
     };
 
     checkAuth();
@@ -60,7 +51,7 @@ export function AdminHub({ lang }: AdminHubProps) {
 
   if (isLoading) {
     return (
-      <div className="fixed inset-0 flex flex-col items-center justify-center bg-background z-50">
+      <div className="fixed inset-0 flex flex-col items-center justify-center bg-[#050505] z-50">
         <div className="relative">
           <div className="absolute inset-0 -m-8 rounded-full border-2 border-primary/20 animate-ping duration-[3s]" />
           <div className="absolute inset-0 -m-4 rounded-full border-2 border-primary/10 animate-pulse duration-[2s]" />
@@ -69,7 +60,7 @@ export function AdminHub({ lang }: AdminHubProps) {
           </div>
         </div>
         <div className="mt-12 space-y-2 text-center">
-          <h2 className="text-xl font-black uppercase tracking-widest text-foreground animate-pulse">
+          <h2 className="text-xl font-black uppercase tracking-widest text-white animate-pulse">
             {lang === "es" ? "Verificando Acceso" : "Verifying Access"}
           </h2>
         </div>
@@ -77,20 +68,20 @@ export function AdminHub({ lang }: AdminHubProps) {
     );
   }
 
-  if (!adminPass) return null;
+  if (!isAdmin) return null;
 
   const t = dictionary[lang].admin;
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-[#050505]">
       <div className="max-w-6xl mx-auto py-12 px-6 md:px-10 pt-12 md:pt-20">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-12">
           <div className="space-y-1">
-            <h1 className="text-5xl font-black tracking-tight text-foreground">
-              {t.title.split(" ")[0]} <span className="text-primary">{t.title.split(" ").slice(1).join(" ")}</span>
+            <h1 className="text-5xl font-black tracking-tight text-white">
+              {(t.title || "Admin").split(" ")[0]} <span className="text-primary">{(t.title || "").split(" ").slice(1).join(" ")}</span>
             </h1>
             <p className="text-muted-foreground text-lg font-medium opacity-80">
-              {t.welcome} <span className="text-foreground font-bold">Gonza</span>
+              {t.welcome || "Bienvenido,"} <span className="text-white font-bold">Gonza</span>
             </p>
           </div>
           
@@ -100,14 +91,15 @@ export function AdminHub({ lang }: AdminHubProps) {
              </div>
              <Button
                variant="ghost"
-               className="rounded-xl border-2 hover:bg-red-50 hover:text-red-600 hover:border-red-100 transition-all font-bold gap-2 pr-4"
-               onClick={() => {
-                 window.localStorage.removeItem("admin_password");
+               className="rounded-xl border-2 border-white/10 hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/20 transition-all font-bold gap-2 pr-4 text-muted-foreground"
+               onClick={async () => {
+                 const { signOut } = await import("@/lib/auth-actions");
+                 await signOut();
                  router.push("/admin/login");
                }}
              >
                <LogOut className="w-4 h-4" />
-               <span className="hidden sm:inline">{t.logout}</span>
+               <span className="hidden sm:inline">{t.logout || "Salir"}</span>
              </Button>
           </div>
         </div>

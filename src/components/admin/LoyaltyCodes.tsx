@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { Language, dictionary } from "@/lib/dictionary";
 import { ArrowLeft, Plus, RefreshCw, Key, CheckCircle2, Circle } from "lucide-react";
 import Link from "next/link";
@@ -16,28 +17,35 @@ interface LoyaltyCode {
 }
 
 export function LoyaltyCodes({ lang }: { lang: Language }) {
-  const t = dictionary[lang].admin;
+  const router = useRouter();
+  const [isAdmin, setIsAdmin] = useState(false);
+  const t = (dictionary[lang] || dictionary["es"]).admin || dictionary["es"].admin;
   const [codes, setCodes] = useState<LoyaltyCode[]>([]);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [steps, setSteps] = useState(1);
   const [amount, setAmount] = useState(1);
 
-  const fetchCodes = async () => {
+  const fetchCodes = useCallback(async () => {
     try {
       const res = await fetch("/api/admin/loyalty-codes");
+      if (res.status === 401) {
+        router.push("/admin/login");
+        return;
+      }
       const data = await res.json();
       setCodes(data);
+      setIsAdmin(true);
     } catch (err) {
       console.error("Error fetching codes:", err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [router]);
 
   useEffect(() => {
     fetchCodes();
-  }, []);
+  }, [fetchCodes]);
 
   const handleGenerate = async () => {
     setGenerating(true);

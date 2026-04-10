@@ -23,14 +23,14 @@ interface CustomerBenefitsProps {
 export function CustomerBenefits({ lang }: CustomerBenefitsProps) {
   const router = useRouter();
   const formRef = useRef<HTMLDivElement>(null);
-  const [adminPass, setAdminPass] = useState("");
+  const [isAdmin, setIsAdmin] = useState(false);
   const [customers, setCustomers] = useState<CustomerPurchase[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState<Partial<CustomerPurchase>>({});
   const [isAdding, setIsAdding] = useState(false);
 
-  const t = dictionary[lang].admin;
+  const t = (dictionary[lang] || dictionary["es"]).admin || dictionary["es"].admin;
   const baseUrl = lang === "en" ? "/en/admin" : "/admin";
 
   const scrollToForm = () => {
@@ -39,15 +39,15 @@ export function CustomerBenefits({ lang }: CustomerBenefitsProps) {
     }, 100);
   };
 
-  const loadCustomers = useCallback(async (pass: string) => {
+  const loadCustomers = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await fetchCustomers(pass);
+      const data = await fetchCustomers();
       setCustomers(data);
+      setIsAdmin(true);
     } catch (error: unknown) {
       console.error("Error loading customers:", error);
       if (error instanceof Error && error.message.includes("401")) {
-        window.localStorage.removeItem("admin_password");
         router.push("/admin/login");
       } else {
         toast.error(lang === "es" ? "Error al cargar clientes" : "Error loading customers");
@@ -58,14 +58,8 @@ export function CustomerBenefits({ lang }: CustomerBenefitsProps) {
   }, [router, lang]);
 
   useEffect(() => {
-    const storedPass = window.localStorage.getItem("admin_password") || "";
-    if (!storedPass) {
-      router.push("/admin/login");
-      return;
-    }
-    setAdminPass(storedPass);
-    loadCustomers(storedPass);
-  }, [router, loadCustomers]);
+    loadCustomers();
+  }, [loadCustomers]);
 
   const handleEditCustomer = (customer: CustomerPurchase) => {
     setEditingId(customer.id);
@@ -92,14 +86,13 @@ export function CustomerBenefits({ lang }: CustomerBenefitsProps) {
 
   const handleSaveCustomer = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!adminPass) return;
     
     try {
       const cleanedDates = (formData.purchaseDates || []).map(d => d.trim());
       const payload = { ...formData, purchaseDates: cleanedDates };
 
       if (editingId) {
-        const updated = await updateCustomer(adminPass, editingId, payload);
+        const updated = await updateCustomer(editingId, payload);
         setCustomers((prev) =>
           prev.map((c) => (c.id === editingId ? updated : c))
         );
@@ -109,7 +102,6 @@ export function CustomerBenefits({ lang }: CustomerBenefitsProps) {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "x-admin-password": adminPass,
           },
           body: JSON.stringify({
             name: payload.name,
@@ -138,12 +130,11 @@ export function CustomerBenefits({ lang }: CustomerBenefitsProps) {
   };
 
   const handleDeleteCustomer = async (id: string) => {
-    if (!adminPass) return;
     const confirmMsg = lang === "es" ? "¿Estás seguro de que querés eliminar este cliente?" : "Are you sure you want to delete this customer?";
     if (!confirm(confirmMsg)) return;
     
     try {
-      await deleteCustomer(adminPass, id);
+      await deleteCustomer(id);
       setCustomers((prev) => prev.filter((c) => c.id !== id));
       toast.success(lang === "es" ? "Cliente eliminado" : "Customer deleted");
     } catch {
@@ -151,7 +142,7 @@ export function CustomerBenefits({ lang }: CustomerBenefitsProps) {
     }
   };
 
-  if (!adminPass) return null;
+  if (!isAdmin && !loading) return null;
 
   return (
     <div className="min-h-screen bg-[#fafafa] dark:bg-[#050505] text-foreground">

@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { isAdmin } from "@/lib/admin-auth";
 
 export async function GET() {
+  if (!await isAdmin()) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   const supabase = createAdminClient();
   const { data, error } = await supabase
     .from("loyalty_codes")
@@ -14,6 +18,9 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    if (!await isAdmin()) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     const { steps = 1, amount = 1 } = await request.json();
     const supabase = createAdminClient();
     
