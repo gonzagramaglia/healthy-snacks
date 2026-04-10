@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 
 export default function AdminLoginPage() {
@@ -39,8 +38,9 @@ export default function AdminLoginPage() {
       // Use the existing auth utility
       const { signInWithGoogle } = await import("@/lib/auth-actions");
       await signInWithGoogle("es");
-    } catch (err: any) {
-      setError(err.message || "Error al iniciar sesión");
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : "Error al iniciar sesión";
+      setError(errorMsg);
       setLoading(false);
     }
   };
