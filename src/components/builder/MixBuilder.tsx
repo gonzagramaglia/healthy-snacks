@@ -1356,172 +1356,7 @@ export function MixBuilder({ lang = "es" }: { lang?: Language }) {
 
           {/* Removed web-only 'Total a pagar' extra row per UX request */}
 
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
-            <Button
-              disabled={
-                isLoadingCheckout ||
-                cartItems.length === 0 ||
-                totalMixQty < 1 ||
-                !deliveryAddress.trim() ||
-                !phone.trim() ||
-                !name.trim() ||
-                !isValidEmail
-              }
-              title={
-                totalMixQty > 0 && totalMixQty < 1
-                  ? t.min_mixes_required.replace(
-                      "{qty}",
-                      totalMixQty.toString(),
-                    )
-                  : ""
-              }
-              onClick={async () => {
-                if (isLoadingCheckout) return;
-                setIsLoadingCheckout(true);
-                // proceed with cash flow
-                try {
-                  // Preparar items para el email
-                  const mixItems = cartItems.map((item) => {
-                    const itemTotal = Object.values(item.mix).reduce(
-                      (a, b) => a + (Number.isFinite(b) ? b : 0),
-                      0,
-                    );
-                    const ingredients = INGREDIENTS.filter(
-                      (ing) => (item.mix[ing.id] ?? 0) > 0,
-                    )
-                      .map((ing) => {
-                        const percent =
-                          itemTotal > 0
-                            ? Math.round(
-                                ((item.mix[ing.id] ?? 0) / itemTotal) * 100,
-                              )
-                            : 0;
-                        const grams = Math.round((percent / 100) * TOTAL_GRAMS);
-                        return `${percent}% de ${ing.name} (${grams}g)`;
-                      })
-                      .join(" + ");
-
-                    return {
-                      title: `Mix personalizado (${ingredients})`,
-                      quantity: item.quantity,
-                      unit_price: PRICE_SINGLE,
-                    };
-                  });
-
-                  // Agregar delivery si corresponde
-                  const items = [...mixItems];
-                  if (deliveryOption === "envio") {
-                    items.push({
-                      title: "Envío a Córdoba",
-                      quantity: 1,
-                      unit_price: DELIVERY_COST,
-                    });
-                  }
-
-                  // If there are promo-based savings (packs) or a discount code, add them as negative items
-                  // so that an on-demand Mercado Pago preference (created later from the saved order) matches the email total.
-                  if (pricing.discount > 0) {
-                    items.push({
-                      title: `Ahorro por promos`,
-                      quantity: 1,
-                      unit_price: -Math.round(pricing.discount),
-                    });
-                  }
-                  if (pricing.discountAmount > 0) {
-                    items.push({
-                      title: `Descuento ${appliedDiscount?.code ? `(${appliedDiscount.code})` : ""}`,
-                      quantity: 1,
-                      unit_price: -Math.round(pricing.discountAmount),
-                    });
-                  }
-
-                  // Debug: verificar datos de descuento
-                  console.log("Datos de descuento:", {
-                    appliedDiscount,
-                    discountAmount: pricing.discountAmount,
-                    discountCode: appliedDiscount?.code,
-                  });
-
-                  // Enviar email de confirmación para pago en efectivo
-                  const emailResponse = await fetch("/api/send-order-email", {
-                    method: "POST",
-                    headers: {
-                      "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                      name,
-                      email,
-                      phone,
-                      items: items,
-                      deliveryOption,
-                      deliveryAddress,
-                      totalPrice: pricing.price,
-                      totalMixQty: cartItems.reduce(
-                        (sum, item) => sum + item.quantity,
-                        0,
-                      ),
-                      paymentMethod: "efectivo",
-                      discountCode: appliedDiscount?.code || null,
-                      discountAmount: pricing.discountAmount || 0,
-                    }),
-                  });
-
-                  if (emailResponse.ok) {
-                    setErrorMessage(""); // Limpiar errores previos
-                    setShowSuccessModal(true);
-                    // Limpiar carrito después del envío exitoso
-                    setCartItems([]);
-                    // Limpiar descuento aplicado
-                    setAppliedDiscount(null);
-                    setDiscountCode("");
-                    setDiscountError("");
-                    // Setear mix clásico
-                    setMix({
-                      anana: 44,
-                      almendras: 44,
-                      nueces: 44,
-                      uva: 44,
-                      banana: 44,
-                    });
-                  } else {
-                    const errorData = await emailResponse.json();
-                    console.error("Error del servidor:", errorData);
-                    setErrorMessage(
-                      "Hubo un error: Por favor intente nuevamente más tarde",
-                    );
-                  }
-                } catch (error) {
-                  console.error("Error al procesar el pedido:", error);
-
-                  // Detectar errores de red específicos
-                  if (
-                    error instanceof TypeError &&
-                    error.message.includes("Failed to fetch")
-                  ) {
-                    setErrorMessage(
-                      "Error de conexión. Verifica tu internet e intenta nuevamente.",
-                    );
-                  } else {
-                    setErrorMessage(
-                      "Hubo un error: Por favor intente nuevamente más tarde",
-                    );
-                  }
-                } finally {
-                  setIsLoadingCheckout(false);
-                }
-              }}
-              variant="default"
-              className="font-bold h-10 px-6"
-            >
-              {isLoadingCheckout ? (
-                <span className="flex items-center gap-2">
-                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                  {t.pay_cash}...
-                </span>
-              ) : (
-                t.pay_cash
-              )}
-            </Button>
+          <div className="flex flex-col sm:flex-row-reverse sm:items-center sm:justify-between gap-3 sm:gap-0">
             <Button
               disabled={
                 isLoadingCheckout ||
@@ -1654,9 +1489,167 @@ export function MixBuilder({ lang = "es" }: { lang?: Language }) {
                   }
                 }
               }}
-              className="bg-yellow-500 hover:bg-yellow-600 text-white border-yellow-500"
+              className="bg-yellow-500 hover:bg-yellow-600 text-white border-yellow-500 font-bold"
             >
               {t.pay_mercadopago}
+            </Button>
+
+            <Button
+              disabled={
+                isLoadingCheckout ||
+                cartItems.length === 0 ||
+                totalMixQty < 1 ||
+                !deliveryAddress.trim() ||
+                !phone.trim() ||
+                !name.trim() ||
+                !isValidEmail
+              }
+              title={
+                totalMixQty > 0 && totalMixQty < 1
+                  ? t.min_mixes_required.replace(
+                      "{qty}",
+                      totalMixQty.toString(),
+                    )
+                  : ""
+              }
+              onClick={async () => {
+                if (isLoadingCheckout) return;
+                setIsLoadingCheckout(true);
+                // proceed with cash flow
+                try {
+                  // Preparar items para el email
+                  const mixItems = cartItems.map((item) => {
+                    const itemTotal = Object.values(item.mix).reduce(
+                      (a, b) => a + (Number.isFinite(b) ? b : 0),
+                      0,
+                    );
+                    const ingredients = INGREDIENTS.filter(
+                      (ing) => (item.mix[ing.id] ?? 0) > 0,
+                    )
+                      .map((ing) => {
+                        const percent =
+                          itemTotal > 0
+                            ? Math.round(
+                                ((item.mix[ing.id] ?? 0) / itemTotal) * 100,
+                              )
+                            : 0;
+                        const grams = Math.round((percent / 100) * TOTAL_GRAMS);
+                        return `${percent}% de ${ing.name} (${grams}g)`;
+                      })
+                      .join(" + ");
+
+                    return {
+                      title: `Mix personalizado (${ingredients})`,
+                      quantity: item.quantity,
+                      unit_price: PRICE_SINGLE,
+                    };
+                  });
+
+                  // Agregar delivery si corresponde
+                  const items = [...mixItems];
+                  if (deliveryOption === "envio") {
+                    items.push({
+                      title: "Envío a Córdoba",
+                      quantity: 1,
+                      unit_price: DELIVERY_COST,
+                    });
+                  }
+
+                  // If there are promo-based savings (packs) or a discount code, add them as negative items
+                  // so that an on-demand Mercado Pago preference (created later from the saved order) matches the email total.
+                  if (pricing.discount > 0) {
+                    items.push({
+                      title: `Ahorro por promos`,
+                      quantity: 1,
+                      unit_price: -Math.round(pricing.discount),
+                    });
+                  }
+                  if (pricing.discountAmount > 0) {
+                    items.push({
+                      title: `Descuento ${appliedDiscount?.code ? `(${appliedDiscount.code})` : ""}`,
+                      quantity: 1,
+                      unit_price: -Math.round(pricing.discountAmount),
+                    });
+                  }
+
+                  // Enviar email de confirmación para pago en efectivo
+                  const emailResponse = await fetch("/api/send-order-email", {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                      name,
+                      email,
+                      phone,
+                      items: items,
+                      deliveryOption,
+                      deliveryAddress,
+                      totalPrice: pricing.price,
+                      totalMixQty: cartItems.reduce(
+                        (sum, item) => sum + item.quantity,
+                        0,
+                      ),
+                      paymentMethod: "efectivo",
+                      discountCode: appliedDiscount?.code || null,
+                      discountAmount: pricing.discountAmount || 0,
+                    }),
+                  });
+
+                  if (emailResponse.ok) {
+                    setErrorMessage(""); // Limpiar errores previos
+                    setShowSuccessModal(true);
+                    // Limpiar carrito después del envío exitoso
+                    setCartItems([]);
+                    // Limpiar descuento aplicado
+                    setAppliedDiscount(null);
+                    setDiscountCode("");
+                    setDiscountError("");
+                    setMix({
+                      anana: 44,
+                      almendras: 44,
+                      nueces: 44,
+                      uva: 44,
+                      banana: 44,
+                    });
+                  } else {
+                    const errorData = await emailResponse.json();
+                    console.error("Error del servidor:", errorData);
+                    setErrorMessage(
+                      "Hubo un error: Por favor intente nuevamente más tarde",
+                    );
+                  }
+                } catch (error) {
+                  console.error("Error al procesar el pedido:", error);
+
+                  // Detectar errores de red específicos
+                  if (
+                    error instanceof TypeError &&
+                    error.message.includes("Failed to fetch")
+                  ) {
+                    setErrorMessage(
+                      "Error de conexión. Verifica tu internet e intenta nuevamente.",
+                    );
+                  } else {
+                    setErrorMessage(
+                      "Hubo un error: Por favor intente nuevamente más tarde",
+                    );
+                  }
+                } finally {
+                  setIsLoadingCheckout(false);
+                }
+              }}
+              variant="default"
+              className="font-bold h-10 px-6"
+            >
+              {isLoadingCheckout ? (
+                <span className="flex items-center gap-2">
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  {t.pay_cash}...
+                </span>
+              ) : (
+                t.pay_cash
+              )}
             </Button>
           </div>
 
