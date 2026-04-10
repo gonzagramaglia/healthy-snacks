@@ -169,66 +169,66 @@ export function CustomerCoupon({
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Redemption Code Section */}
-      {!isFull && (
-        <div className="mt-6 bg-card border border-primary/10 rounded-2xl p-6 shadow-sm">
-          <h4 className="text-sm font-bold uppercase tracking-wider mb-3 text-muted-foreground">
-            {t.loyalty_code_label}
-          </h4>
-          <form 
-            onSubmit={async (e) => {
-              e.preventDefault();
-              const form = e.currentTarget;
-              const formData = new FormData(form);
-              const code = formData.get("code") as string;
-              
-              if (!code) return;
-
-              const btn = form.querySelector("button");
-              if (btn) btn.disabled = true;
-
-              try {
-                const res = await fetch("/api/loyalty-codes/redeem", {
-                  method: "POST",
-                  body: JSON.stringify({ code, customerId: data.id }),
-                  headers: { "Content-Type": "application/json" },
-                });
-
-                const result = await res.json();
+        {/* Redemption Code Section */}
+        {!isFull && (
+          <div className="mt-6 bg-card border border-primary/10 rounded-2xl p-6 shadow-sm">
+            <h4 className="text-sm font-bold uppercase tracking-wider mb-3 text-muted-foreground">
+              {t.loyalty_code_label}
+            </h4>
+            <form 
+              onSubmit={async (e) => {
+                e.preventDefault();
+                const form = e.currentTarget;
+                const formData = new FormData(form);
+                const code = formData.get("code") as string;
                 
-                if (result.success) {
-                   const msg = t.loyalty_code_success.replace("{steps}", result.stepsAdded.toString());
-                   alert(msg);
-                   window.location.reload();
-                } else {
-                   alert(result.error || t.loyalty_code_error);
+                if (!code) return;
+
+                const btn = form.querySelector("button");
+                if (btn) btn.disabled = true;
+
+                try {
+                  const res = await fetch("/api/loyalty-codes/redeem", {
+                    method: "POST",
+                    body: JSON.stringify({ code, customerId: data.id }),
+                    headers: { "Content-Type": "application/json" },
+                  });
+
+                  const result = await res.json();
+                  
+                  if (result.success) {
+                     const msg = t.loyalty_code_success.replace("{steps}", result.stepsAdded.toString());
+                     alert(msg);
+                     window.location.reload();
+                  } else {
+                     alert(result.error || t.loyalty_code_error);
+                  }
+                } catch {
+                  alert(t.loyalty_code_error);
+                } finally {
+                  if (btn) btn.disabled = false;
                 }
-              } catch (err) {
-                alert(t.loyalty_code_error);
-              } finally {
-                if (btn) btn.disabled = false;
-              }
-            }}
-            className="flex gap-2"
-          >
-            <input
-              name="code"
-              type="text"
-              placeholder={t.loyalty_code_placeholder}
-              className="flex-1 bg-muted/50 border border-primary/10 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 uppercase font-mono"
-              required
-            />
-            <button
-              type="submit"
-              className="bg-primary text-primary-foreground px-6 py-2 rounded-xl text-sm font-bold hover:opacity-90 transition-opacity disabled:opacity-50"
+              }}
+              className="flex gap-2"
             >
-              {t.loyalty_code_button}
-            </button>
-          </form>
-        </div>
-      )}
+              <input
+                name="code"
+                type="text"
+                placeholder={t.loyalty_code_placeholder}
+                className="flex-1 bg-muted/50 border border-primary/10 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 uppercase font-mono"
+                required
+              />
+              <button
+                type="submit"
+                className="bg-primary text-primary-foreground px-6 py-2 rounded-xl text-sm font-bold hover:opacity-90 transition-opacity disabled:opacity-50"
+              >
+                {t.loyalty_code_button}
+              </button>
+            </form>
+          </div>
+        )}
+      </div>
     </section>
   );
 }

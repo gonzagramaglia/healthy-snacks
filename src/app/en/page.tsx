@@ -7,13 +7,6 @@ export const metadata: Metadata = {
   description: "Build your 220g trail mix with selected ingredients.",
 };
 
-export default async function HomeEn(props: {
-  searchParams: Promise<{ code?: string; lang?: string }>;
-}) {
-  const searchParams = await props.searchParams;
-  if (searchParams.code) {
-    redirect(`/auth/callback?code=${searchParams.code}&lang=en`);
-  }
-
+export default function HomeEn() {
   return <MainContent lang="en" benefitsMode="teaser" />;
 }
