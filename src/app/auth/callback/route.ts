@@ -75,11 +75,21 @@ export async function GET(request: NextRequest) {
 
         if (!customer) {
           console.log("Creating new customer record for:", user.email);
-          const baseUsername = user.user_metadata?.full_name 
-            ? user.user_metadata.full_name.toLowerCase().replace(/\s+/g, "").replace(/[^a-z0-9]/g, "")
-            : user.email.split("@")[0].toLowerCase().replace(/[^a-z0-9]/g, "");
+          const baseUsername = (user.user_metadata?.full_name || user.email.split("@")[0])
+            .toLowerCase()
+            .replace(/\s+/g, "")
+            .replace(/[^a-z0-9]/g, "");
           
-          const username = `${baseUsername}${Math.floor(Math.random() * 1000)}`;
+          // Check if baseUsername is already taken
+          const { data: existing } = await adminSupabase
+            .from("customers")
+            .select("id")
+            .eq("username", baseUsername)
+            .maybeSingle();
+
+          const username = existing 
+            ? `${baseUsername}${Math.floor(Math.random() * 900) + 100}`
+            : baseUsername;
 
           const { error: insertError } = await adminSupabase.from("customers").insert({
             name: user.user_metadata?.full_name || user.email.split("@")[0],
