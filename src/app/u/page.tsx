@@ -1,4 +1,6 @@
 import { MainContent } from "@/components/MainContent";
+import { AuthFallback } from "@/components/AuthFallback";
+import { Suspense } from "react";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -7,5 +9,12 @@ export const metadata: Metadata = {
 };
 
 export default function UsersPage() {
-  return <MainContent lang="es" benefitsMode="hub" />;
+  return (
+    <>
+      <Suspense fallback={null}>
+        <AuthFallback />
+      </Suspense>
+      <MainContent lang="es" benefitsMode="hub" />
+    </>
+  );
 }
