@@ -1,20 +1,21 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
 
 export function AuthFallback() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const code = searchParams.get("code");
-
   useEffect(() => {
+    // We use window.location.search directly for maximum reliability
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("code");
+
     if (code) {
+      console.log("Auth code detected, redirecting to callback...");
       const url = new URL(window.location.href);
       url.pathname = "/auth/callback";
+      // We keep the existing search params (code, etc.)
       window.location.href = url.toString();
     }
-  }, [code]);
+  }, []);
 
   return null;
 }

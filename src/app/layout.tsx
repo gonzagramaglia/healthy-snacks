@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
+import { AuthFallback } from "@/components/AuthFallback";
+import { Suspense } from "react";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -57,6 +59,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-zinc-50 dark:bg-background text-foreground`}
       >
         <ThemeProvider>
+          <Suspense fallback={null}>
+            <AuthFallback />
+          </Suspense>
           {children}
           <Toaster richColors position="top-center" />
         </ThemeProvider>
