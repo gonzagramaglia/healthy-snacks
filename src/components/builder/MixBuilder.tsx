@@ -1281,6 +1281,44 @@ export function MixBuilder({ lang = "es" }: { lang?: Language }) {
               />
             </div>
           </div>
+          {/* Código de descuento */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-border/40">
+            <div>
+              <label
+                htmlFor="discount-code"
+                className="text-sm text-muted-foreground block mb-1"
+              >
+                {t.discount_title}
+              </label>
+              <div className="flex gap-2 items-stretch mt-1">
+                <Input
+                  id="discount-code"
+                  value={discountCode}
+                  onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
+                  placeholder={t.discount_placeholder}
+                  className="flex-1 h-10"
+                  disabled={!!appliedDiscount}
+                />
+                <Button
+                  variant={appliedDiscount ? "outline" : "default"}
+                  onClick={appliedDiscount ? () => setAppliedDiscount(null) : _handleApplyDiscount}
+                  className="h-10 px-4 font-bold cursor-pointer"
+                  type="button"
+                >
+                  {appliedDiscount ? "×" : t.discount_apply}
+                </Button>
+              </div>
+              {_discountError && (
+                <p className="text-xs text-red-500 font-medium mt-1">{_discountError}</p>
+              )}
+              {appliedDiscount && (
+                <p className="text-xs text-green-600 font-medium mt-1">
+                  {lang === "es" ? "¡Código aplicado!" : "Code applied!"}
+                </p>
+              )}
+            </div>
+            <div />
+          </div>
 
           {/* Precios */}
           <div className="space-y-1 text-sm">
