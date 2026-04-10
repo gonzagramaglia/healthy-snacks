@@ -2,6 +2,8 @@ import { MainContent } from "@/components/MainContent";
 import { CustomerPurchase } from "@/lib/customers";
 import { Metadata } from "next";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
@@ -41,6 +43,13 @@ export default async function CustomerPage({
 }: {
   params: Promise<{ customerName: string }>;
 }) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/u");
+  }
+
   const { customerName } = await params;
   const targetId = customerName.toLowerCase();
 

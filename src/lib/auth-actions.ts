@@ -4,7 +4,7 @@ import { createClient } from "./supabase/client";
 
 export async function signInWithGoogle(lang: string = "es") {
   const supabase = createClient();
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || window.location.origin;
+  const baseUrl = window.location.origin;
   
   const { error } = await supabase.auth.signInWithOAuth({
     provider: "google",

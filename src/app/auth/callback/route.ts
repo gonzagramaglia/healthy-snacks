@@ -7,9 +7,10 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const code = searchParams.get("code");
   const lang = searchParams.get("lang") || "es";
-  const next = searchParams.get("next") || (lang === "en" ? "/en" : "/");
+  const origin = request.nextUrl.origin;
+  const next = searchParams.get("next") || "/";
 
-  console.log("Auth callback triggered", { code: !!code, lang, next });
+  console.log("Auth callback triggered", { origin, code: !!code, lang, next });
 
   if (code) {
     try {
@@ -36,12 +37,17 @@ export async function GET(request: NextRequest) {
 
       if (error) {
         console.error("Auth error during code exchange:", error);
-        return NextResponse.redirect(new URL(`${next}?error=auth_exchange_failed`, request.url));
+        return NextResponse.redirect(`${origin}${next}?error=auth_exchange_failed`);
       }
 
       const user = data?.user;
 
-      if (user?.email) {
+      if (!user) {
+        console.error("No user found after code exchange");
+        return NextResponse.redirect(`${origin}${next}?error=no_user_found`);
+      }
+
+      if (user.email) {
         console.log("User verified via Google:", user.email);
         
         // Admin client (self-contained)
@@ -88,7 +94,8 @@ export async function GET(request: NextRequest) {
           }
 
           const prefix = lang === "en" ? "/en/u/" : "/u/";
-          return NextResponse.redirect(new URL(`${prefix}${username}`, request.url));
+          console.log("Redirecting new user to profile:", `${prefix}${username}`);
+          return NextResponse.redirect(`${origin}${prefix}${username}`);
         } else {
           console.log("Existing customer found:", customer.username);
           // Update existing record if not verified or name is missing
@@ -103,13 +110,15 @@ export async function GET(request: NextRequest) {
           }
 
           const prefix = lang === "en" ? "/en/u/" : "/u/";
-          return NextResponse.redirect(new URL(`${prefix}${customer.username}`, request.url));
+          console.log("Redirecting to profile:", `${prefix}${customer.username}`);
+          return NextResponse.redirect(`${origin}${prefix}${customer.username}`);
         }
       }
     } catch (err) {
       console.error("Unexpected error in auth callback:", err);
+      return NextResponse.redirect(`${origin}${next}?error=unexpected_error`);
     }
   }
 
-  return NextResponse.redirect(new URL(next, request.url));
+  return NextResponse.redirect(`${origin}${next}`);
 }
