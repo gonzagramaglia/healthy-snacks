@@ -19,15 +19,16 @@ export function BenefitsTeaser({ lang }: { lang: Language }) {
         <div className="relative z-10 flex items-center justify-between gap-4">
           <div>
             <h3 className="text-2xl md:text-3xl font-extrabold tracking-tight">
-              {lang === "es"
-                ? "🎄 Se adelantó la Navidad: hay regalos 🎁"
-                : "🎄 Christmas came early: gifts are here 🎁"}
+              {lang === "es" ? (
+                <>
+                  🎄 Se adelantó la Navidad: hay regalos <span className="hidden md:inline">🎁</span>
+                </>
+              ) : (
+                <>
+                  🎄 Christmas came early: gifts are here <span className="hidden md:inline">🎁</span>
+                </>
+              )}
             </h3>
-            <p className="text-foreground/80 text-sm md:text-base mt-1 font-semibold">
-              {lang === "es"
-                ? "Entrá y descubrí tu beneficio ✨"
-                : "Enter and unlock your benefit ✨"}
-            </p>
           </div>
           <div className="bg-primary text-primary-foreground p-3.5 rounded-2xl hover:scale-105 active:scale-95 transition-all duration-300 shadow-xl shadow-primary/20 cursor-pointer">
             <ArrowRight className="w-6 h-6 stroke-[2.5px]" />

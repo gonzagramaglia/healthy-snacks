@@ -173,7 +173,7 @@ export function MainContent({
             {/* Made in Desktop (Single line) */}
             <div className="hidden sm:block text-sm">
               <a
-                href="https://www.youtube.com/watch?v=oYN5EtQRkuk&lc=UgzjnUKWt5VhMSV-6mZ4AaABAg"
+                href="https://youtu.be/OSvBjVzC_U0"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-foreground cursor-pointer transition-colors whitespace-nowrap"
@@ -187,7 +187,7 @@ export function MainContent({
           <div className="flex sm:hidden items-center justify-between w-full text-sm">
             <span>Mens sana in corpore sano</span>
             <a
-              href="https://www.youtube.com/watch?v=oYN5EtQRkuk&lc=UgzjnUKWt5VhMSV-6mZ4AaABAg"
+              href="https://youtu.be/OSvBjVzC_U0"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-foreground cursor-pointer transition-colors whitespace-nowrap"

@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Language } from "@/lib/dictionary";
 import { toast } from "sonner";
 import { signInWithGoogle } from "@/lib/auth-actions";
-import { HelpCircle } from "lucide-react";
 
 export function CustomerSearch({ lang }: { lang: Language }) {
   const [isLoading, setIsLoading] = useState(false);
@@ -34,23 +33,21 @@ export function CustomerSearch({ lang }: { lang: Language }) {
            <p className="text-xs text-muted-foreground leading-relaxed">
              {lang === "es" ? (
                <span>
-                 🎟️ Cada compra suma pasos. Al llegar a 10, ¡tenés un Mix gratuito y una{" "}
-                 <span className="md:inline-flex md:items-center md:gap-1.5 md:whitespace-nowrap">
-                   sorpresa! 🎁
-                   <span className="hidden md:group/help md:relative md:inline-block md:cursor-help">
-                     <HelpCircle className="w-3 h-3 text-muted-foreground/60 hover:text-primary transition-colors" />
-                     <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-48 p-2 bg-popover text-popover-foreground text-[10px] rounded-lg shadow-xl border border-primary/10 opacity-0 group-hover/help:opacity-100 transition-opacity pointer-events-none z-50 whitespace-normal normal-case font-medium leading-snug text-center">
-                       La sorpresa puede ser un descuento en tu próxima compra o en locales adheridos
-                       <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-0.5 border-4 border-transparent border-t-popover" />
-                     </div>
+                 🎟️ Cada compra suma pasos. Al llegar a 10, ¡tenés un Mix gratuito y{" "}
+                 <span className="hidden md:inline">un descuento! 🎁</span>
+                 <span className="md:hidden">
+                   una sorpresa! 🎁
+                   <span className="block mt-1 opacity-80 italic">
+                     (La sorpresa puede ser un descuento en tu próxima compra o en locales adheridos)
                    </span>
-                 </span>
-                 <span className="md:hidden block mt-1 opacity-80 italic">
-                   (La sorpresa puede ser un descuento en tu próxima compra o en locales adheridos)
                  </span>
                </span>
              ) : (
-               "🎟️ Every purchase adds steps. Reach 10 and get a free Mix and a surprise! 🎁"
+               <span>
+                 🎟️ Every purchase adds steps. Reach 10 and get a free Mix and{" "}
+                 <span className="hidden md:inline">a discount! 🎁</span>
+                 <span className="md:hidden">a surprise! 🎁</span>
+               </span>
              )}
            </p>
            <div className="grid grid-cols-5 gap-1.5 pt-1">

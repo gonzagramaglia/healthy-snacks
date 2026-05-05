@@ -9,7 +9,7 @@ export const dictionary = {
     // Hero
     hero_title: "Mixes de ⚡\nFrutos Secos a tu manera",
     hero_subtitle:
-      "Armá tu Mix de 220g con ingredientes seleccionados\nPrepará tus Mixes para recargar las pilas 🔋 ⚡",
+      "Armá tu Mix de 220g con ingredientes seleccionados\nEnergizate de manera rica y saludable 🔋 ⚡",
     delivery_free: "Delivery gratuito en",
     location: "Ciudad Universitaria",
     location_2: "",
@@ -215,7 +215,7 @@ export const dictionary = {
     // Hero
     hero_title: "Build your ⚡\nTrail Mix your way",
     hero_subtitle:
-      "Build your 220g Mix with selected ingredients\nPrepare your Mixes to recharge your batteries 🔋 ⚡",
+      "Build your 220g Mix with selected ingredients\nEnergize yourself in a delicious and healthy way 🔋 ⚡",
     delivery_free: "Free delivery at",
     location: "Ciudad Universitaria",
     location_2: "",
