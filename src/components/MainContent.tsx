@@ -60,7 +60,7 @@ export function MainContent({
             <span
               className={`${sourceSans.className} text-lg font-semibold leading-none`}
             >
-              Moovimiento
+              {lang === "es" ? "Snacks Saludables" : "Healthy Snacks"}
             </span>
           </Link>
           <nav className="flex items-center gap-5 justify-end">

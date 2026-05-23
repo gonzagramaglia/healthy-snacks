@@ -157,7 +157,7 @@ export const dictionary = {
     // FAQ
     faq_title_full: "Preguntas Frecuentes",
     faq_subtitle: "¡Preguntanos lo que quieras!",
-    faq_contact_email: "gonza@moovimiento.com",
+    faq_contact_email: "gonzagramaglia@gmail.com",
     faq_q1: "¿Es seguro comprar en Moovimiento?",
     faq_a1:
       "Totalmente. Usamos Mercado Pago para procesar los cobros, así que tu dinero y tus datos están siempre protegidos. ¡Podés comprar tranquila/o!",
@@ -360,7 +360,7 @@ export const dictionary = {
     // FAQ
     faq_title_full: "Frequently Asked Questions",
     faq_subtitle: "Ask me anything!",
-    faq_contact_email: "gonza@moovimiento.com",
+    faq_contact_email: "gonzagramaglia@gmail.com",
     faq_q1: "Is it safe to buy at Moovimiento?",
     faq_a1:
       "Absolutely. We use Mercado Pago to process payments, ensuring your transaction is secure and your data is protected.",

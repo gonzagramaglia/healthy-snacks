@@ -345,24 +345,24 @@ export async function POST(request: NextRequest) {
         : deliveryOption === "sagrada"
           ? "Punto de encuentro (Envío gratuito)"
           : `Córdoba (${currency.format(1000)})`;
-    
+
     // Auto-create customer if doesn't exist
     const supabase = createAdminClient();
     let verificationToken = "";
     let customerUsername = "";
-    
+
     try {
       const { data: existingCustomer } = await supabase
         .from("customers")
         .select("*")
         .eq("email", email)
         .maybeSingle();
-        
+
       if (!existingCustomer) {
         console.log(`Creando cliente automático inicial para ${email}...`);
         customerUsername = email.split("@")[0].toLowerCase().replace(/[^a-z0-9]/g, "");
         verificationToken = crypto.randomBytes(32).toString("hex");
-        
+
         await supabase.from("customers").insert({
           name: name || customerUsername,
           email: email,
@@ -434,7 +434,7 @@ export async function POST(request: NextRequest) {
           <span style="vertical-align:middle;">Coordinar por WhatsApp</span>
         </a>
       `;
-      
+
       // If we have a direct paymentLink prefer it; otherwise use pay token link that will create/redirect on-demand
       const payHref = paymentLink
         ? paymentLink
@@ -449,7 +449,7 @@ export async function POST(request: NextRequest) {
         </a>
       `
         : "";
-      
+
       const buttonsRow = `<div style="text-align:center; margin-top:16px;">${whatsappButton}${payButton}</div>`;
 
       // Small hint shown below buttons when a Mercado Pago button is available
@@ -478,10 +478,10 @@ export async function POST(request: NextRequest) {
 
       // Add a loyalty card preview or verification link
       const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "";
-      const verificationLink = (baseUrl && verificationToken) 
+      const verificationLink = (baseUrl && verificationToken)
         ? `${baseUrl.replace(/\/$/, "")}/api/users/confirm?token=${verificationToken}`
         : "";
-      
+
       const loyaltyBlock = verificationLink ? `
         <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; padding: 16px; margin: 20px 0; border-radius: 8px;">
           <p style="margin: 0 0 8px 0; color: #166534;"><strong>⚡ ¡Conseguí stickers gratis!</strong></p>
@@ -493,9 +493,9 @@ export async function POST(request: NextRequest) {
       ` : "";
 
       result = await resend.emails.send({
-        from: "Gonza de Moovimiento <gonza@moovimiento.com>",
+        from: "Gonza de Moovimiento <gonzagramaglia@gmail.com>",
         to: email,
-        bcc: ["gonza@moovimiento.com", "gonzalogramagia@gmail.com"],
+        bcc: ["gonzagramaglia@gmail.com"],
         subject: emailSubject,
         html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -556,7 +556,7 @@ export async function POST(request: NextRequest) {
             </p>
             
             <p style="margin-top: 20px; font-size: 14px; color: #666;">
-              ¿Tenés alguna duda? Escribinos a <a href="mailto:gonza@moovimiento.com">gonza@moovimiento.com</a> o visitá nuestras <a href="https://www.moovimiento.com/#faq">Preguntas Frecuentes</a>
+              ¿Tenés alguna duda? Escribinos a <a href="mailto:gonzagramaglia@gmail.com">gonzagramaglia@gmail.com</a> o visitá nuestras <a href="https://www.moovimiento.com/#faq">Preguntas Frecuentes</a>
             </p>
 
             <p style="margin-top: 20px; font-size: 14px; color: #666;">

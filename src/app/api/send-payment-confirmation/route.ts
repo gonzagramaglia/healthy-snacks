@@ -16,8 +16,8 @@ export async function POST(request: NextRequest) {
 
     const resend = new Resend(process.env.RESEND_API_KEY);
 
-    const deliveryText = deliveryOption === "ciudad" 
-      ? "Ciudad Universitaria (Envío gratuito)" 
+    const deliveryText = deliveryOption === "ciudad"
+      ? "Ciudad Universitaria (Envío gratuito)"
       : "Córdoba";
 
     const whatsappLink = `https://wa.me/5493513239624?text=${encodeURIComponent(`Hola! Soy ${name || 'un cliente'}, acabo de confirmar mi pago y quiero coordinar la entrega.`)}`;
@@ -25,9 +25,9 @@ export async function POST(request: NextRequest) {
     const emailSubject = `✅ ¡Pago confirmado ${name}! Ya nos ponemos en contacto`;
 
     await resend.emails.send({
-      from: "Gonza de Moovimiento <gonza@moovimiento.com>",
+      from: "Gonza de Moovimiento <gonzagramaglia@gmail.com>",
       to: email,
-      bcc: ["gonza@moovimiento.com", "gonzalogramagia@gmail.com"],
+      bcc: ["gonzagramaglia@gmail.com"],
       subject: emailSubject,
       html: `
         <!DOCTYPE html>
@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
                 </div>
 
                 <p style="margin-top: 30px; font-size: 14px; color: #666;">
-                  ¿Tenés alguna duda? Escribinos a <a href="mailto:gonza@moovimiento.com">gonza@moovimiento.com</a> o visitá nuestras <a href="https://www.moovimiento.com/#faq">Preguntas Frecuentes</a>
+                  ¿Tenés alguna duda? Escribinos a <a href="mailto:gonzagramaglia@gmail.com">gonzagramaglia@gmail.com</a> o visitá nuestras <a href="https://www.moovimiento.com/#faq">Preguntas Frecuentes</a>
                 </p>
 
                 <p style="margin-top: 20px; font-size: 14px; color: #666;">

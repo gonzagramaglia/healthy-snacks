@@ -1220,6 +1220,7 @@ export function MixBuilder({ lang = "es" }: { lang?: Language }) {
                 className="w-full"
                 required
                 title="Este campo es obligatorio"
+                disabled
               />
             </div>
             <div>
@@ -1238,6 +1239,7 @@ export function MixBuilder({ lang = "es" }: { lang?: Language }) {
                 className="w-full"
                 required
                 title="Este campo es obligatorio"
+                disabled
               />
             </div>
           </div>
@@ -1260,6 +1262,7 @@ export function MixBuilder({ lang = "es" }: { lang?: Language }) {
                 className="w-full"
                 required
                 title="Este campo es obligatorio"
+                disabled
               />
             </div>
             <div>
@@ -1278,6 +1281,7 @@ export function MixBuilder({ lang = "es" }: { lang?: Language }) {
                 className="w-full"
                 required
                 title="Por favor ingresa un email válido"
+                disabled
               />
             </div>
           </div>
@@ -1297,7 +1301,7 @@ export function MixBuilder({ lang = "es" }: { lang?: Language }) {
                   onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
                   placeholder={t.discount_placeholder}
                   className="flex-1 h-10"
-                  disabled={!!appliedDiscount}
+                  disabled
                 />
                 <Button
                   variant={appliedDiscount ? "outline" : "default"}
@@ -1307,6 +1311,7 @@ export function MixBuilder({ lang = "es" }: { lang?: Language }) {
                     !appliedDiscount && "bg-gray-500 hover:bg-gray-600 text-white border-gray-500 border-0"
                   )}
                   type="button"
+                  disabled
                 >
                   {appliedDiscount ? "×" : t.discount_apply}
                 </Button>

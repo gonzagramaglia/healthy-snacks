@@ -7,5 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function HomeEn() {
-  return <MainContent lang="en" benefitsMode="teaser" />;
+  return <MainContent lang="en" benefitsMode="hub" />;
 }

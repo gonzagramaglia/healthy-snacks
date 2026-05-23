@@ -16,7 +16,7 @@ export function buildGenericEmailHtml(opts: { title?: string; name?: string; con
           ${contentHtml}
         </div>
 
-        <p style="margin-top: 20px; font-size: 14px; color: #666;">Si tenés alguna duda escribinos a <a href="mailto:gonza@moovimiento.com">gonza@moovimiento.com</a></p>
+        <p style="margin-top: 20px; font-size: 14px; color: #666;">Si tenés alguna duda escribinos a <a href="mailto:gonzagramaglia@gmail.com">gonzagramaglia@gmail.com</a></p>
 
         <p style="margin-top: 10px; font-size: 14px; color: #666;">¡Gracias por confiar en nosotros! ⚡<br>Gonza</p>
       </div>

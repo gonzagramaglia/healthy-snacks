@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
   const wrapped = buildGenericEmailHtml({ title: (title || subject), name: row.name || undefined, contentHtml: personalizedBody, headerImageHtml });
         try {
           await resend.emails.send({
-            from: 'Gonza de Moovimiento <gonza@moovimiento.com>',
+            from: 'Gonza de Moovimiento <gonzagramaglia@gmail.com>',
             to,
             subject,
             html: wrapped,
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
   const headerImageHtml = headerImage ? `<div style="text-align:center; margin:12px 0;"><img src="${headerImage}" alt="Portada" style="max-width:100%; height:auto; border-radius:8px;"/></div>` : undefined;
   const wrapped = buildGenericEmailHtml({ title: (title || subject), contentHtml: personalizedBody, headerImageHtml });
         try {
-          await resend.emails.send({ from: 'Gonza de Moovimiento <gonza@moovimiento.com>', to, subject, html: wrapped });
+          await resend.emails.send({ from: 'Gonza de Moovimiento <gonzagramaglia@gmail.com>', to, subject, html: wrapped });
           results.push({ email: to, ok: true });
         } catch (err) {
           console.error('Error sending promo to', to, err);
